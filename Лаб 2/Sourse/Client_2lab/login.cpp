@@ -6,6 +6,7 @@ Login::Login(QWidget *parent) :
     ui(new Ui::Login)
 {
     ui->setupUi(this);
+    ui->lineEdit_2->setEchoMode(QLineEdit::Password);
 
 }
 
@@ -16,7 +17,7 @@ Login::~Login()
 
 void Login::on_pushButton_clicked()
 {
-    //hide();
+
     close();
     emit show_main();
 
@@ -24,7 +25,7 @@ void Login::on_pushButton_clicked()
 
 void Login::on_pushButton_2_clicked()
 {
-    //hide();
+
     close();
     emit show_reg();
 

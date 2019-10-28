@@ -12,3 +12,10 @@ WinMain::~WinMain()
 {
     delete ui;
 }
+
+void WinMain::on_pushButton_clicked()
+{
+    emit show_log();
+    close();
+    // hide();
+}

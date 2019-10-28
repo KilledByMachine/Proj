@@ -12,3 +12,15 @@ Reg::~Reg()
 {
     delete ui;
 }
+
+void Reg::on_pushButton_clicked()
+{
+    emit show_log();
+    close();
+}
+
+void Reg::on_pushButton_2_clicked()
+{
+    emit show_main();
+    close();
+}

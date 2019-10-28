@@ -6,47 +6,144 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>564</width>
-    <height>348</height>
+    <width>260</width>
+    <height>294</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Регєстрація</string>
+   <string>Реєстрація</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="pushButton">
+   <widget class="QGroupBox" name="groupBox">
     <property name="geometry">
      <rect>
-      <x>240</x>
-      <y>130</y>
-      <width>75</width>
-      <height>23</height>
+      <x>10</x>
+      <y>1</y>
+      <width>231</width>
+      <height>99</height>
      </rect>
     </property>
-    <property name="text">
-     <string>Логін</string>
+    <property name="title">
+     <string/>
     </property>
+    <widget class="QLineEdit" name="lineEdit_2">
+     <property name="geometry">
+      <rect>
+       <x>90</x>
+       <y>41</y>
+       <width>133</width>
+       <height>20</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit">
+     <property name="geometry">
+      <rect>
+       <x>89</x>
+       <y>11</y>
+       <width>133</width>
+       <height>20</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_3">
+     <property name="geometry">
+      <rect>
+       <x>90</x>
+       <y>67</y>
+       <width>133</width>
+       <height>20</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label">
+     <property name="geometry">
+      <rect>
+       <x>21</x>
+       <y>11</y>
+       <width>22</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>І'мя:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_2">
+     <property name="geometry">
+      <rect>
+       <x>21</x>
+       <y>41</y>
+       <width>41</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Пароль:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_3">
+     <property name="geometry">
+      <rect>
+       <x>21</x>
+       <y>67</y>
+       <width>98</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Повторити:</string>
+     </property>
+    </widget>
    </widget>
-   <widget class="QPushButton" name="pushButton_2">
+   <widget class="QGroupBox" name="groupBox_2">
     <property name="geometry">
      <rect>
-      <x>240</x>
-      <y>90</y>
-      <width>91</width>
-      <height>23</height>
+      <x>40</x>
+      <y>120</y>
+      <width>181</width>
+      <height>103</height>
      </rect>
     </property>
-    <property name="text">
-     <string>Головне вікно</string>
+    <property name="title">
+     <string/>
     </property>
+    <widget class="QPushButton" name="pushButton_2">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>20</y>
+       <width>121</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Зареєструватись</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButton">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>60</y>
+       <width>121</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Назад до авторизації</string>
+     </property>
+    </widget>
    </widget>
+   <zorder>groupBox_2</zorder>
+   <zorder>groupBox</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>564</width>
+     <width>260</width>
      <height>21</height>
     </rect>
    </property>

@@ -229,7 +229,7 @@
      <string>Оцінок:</string>
     </property>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>350</x>
@@ -281,12 +281,12 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>350</x>
       <y>190</y>
-      <width>167</width>
+      <width>179</width>
       <height>22</height>
      </rect>
     </property>
@@ -337,7 +337,7 @@
      <x>0</x>
      <y>0</y>
      <width>656</width>
-     <height>19</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
@@ -346,7 +346,7 @@
     </property>
     <widget class="QMenu" name="menu_2">
      <property name="title">
-      <string>По курсах</string>
+      <string>По інститутах</string>
      </property>
      <addaction name="action_3"/>
      <addaction name="action_4"/>
@@ -386,9 +386,19 @@
      <addaction name="action2018"/>
      <addaction name="menu_4"/>
     </widget>
+    <widget class="QMenu" name="menu_5">
+     <property name="title">
+      <string>Курси</string>
+     </property>
+     <addaction name="action1_2"/>
+     <addaction name="action2_2"/>
+     <addaction name="action3"/>
+     <addaction name="action4"/>
+    </widget>
     <addaction name="separator"/>
     <addaction name="menu_2"/>
     <addaction name="menu_3"/>
+    <addaction name="menu_5"/>
    </widget>
    <addaction name="menu"/>
   </widget>
@@ -581,6 +591,26 @@
   <action name="action_17">
    <property name="text">
     <string>ІХХТ</string>
+   </property>
+  </action>
+  <action name="action1_2">
+   <property name="text">
+    <string>1</string>
+   </property>
+  </action>
+  <action name="action2_2">
+   <property name="text">
+    <string>2</string>
+   </property>
+  </action>
+  <action name="action3">
+   <property name="text">
+    <string>3</string>
+   </property>
+  </action>
+  <action name="action4">
+   <property name="text">
+    <string>4</string>
    </property>
   </action>
  </widget>

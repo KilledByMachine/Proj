@@ -1,40 +1,83 @@
 #include "server.h"
 
 
+
 Server::Server(QObject *parent) : QObject(parent)
 {
     mTcpServer = new QTcpServer(this);
     connect(mTcpServer, &QTcpServer::newConnection, this, &Server::slotNewConnection);
 
-    if(!mTcpServer->listen(QHostAddress::Any, 6000)){
-
+    if(!mTcpServer->listen(QHostAddress::Any, 6000))
+    {
         qDebug() << "server is not started";
-    } else {
+    } else
+    {
         qDebug() << "server is started";
     }
 
-    connect(mTcpServer,SIGNAL(newConnection()),this,SLOT(on_newUserConnected()));
-}
 
+
+}
+Server:: Msok  Descriptor[100];
+QList <Server:: Msok> Table;
+int count =0;
 void Server::slotNewConnection()
 {
+
     mTcpSocket = mTcpServer->nextPendingConnection();
     QTextStream str(mTcpSocket);
+    //str.setCodec("CP-1251");CP=Windows
+    Msok NewUser;
+    NewUser.desc=mTcpSocket->socketDescriptor();
+    NewUser.sok=mTcpSocket;
+    Table.insert(Table.end(),NewUser);
+    Descriptor[count]=NewUser;
+    count++;
     str.setCodec("UTF-8");
-    QString s="КУ я тут";
+    QString s="Текст, text";
+    str <<s;
+    s="text";
     str <<s;
     str<<flush;
     qDebug() << "New Connect";
-    //connect(mTcpSocket, SIGNAL(disconnected()), this, SLOT(slotClientDisconnected()));
+    qDebug() <<NewUser.desc;
+    qDebug() <<count;
+    connect(NewUser.sok, SIGNAL(disconnected()), this, SLOT(slotClientDisconnected()));
+    connect(NewUser.sok,SIGNAL(readyRead()),this,SLOT(get_data()));
+    /*
+     * кароч табл вдалась.. тре зробити нормально (все в ліст) через інсерт, при відключенні знаходити
+     * цей елемент (мб за номером) і видаляти.
+    */
+
+
 }
 
-void Server::on_newUserConnected()
-{
-    qDebug() << "Server::on_newUserConnected(): new anonymous user connected";
-    //ConnectedClients Cll;
-    QMap<int, QTcpSocket*> C;
-    C.insert(mTcpSocket->socketDescriptor(),mTcpSocket);
-    qDebug()<<mTcpSocket->socketDescriptor();
 
-    //connect(mTcpSocket, SIGNAL(readyRead()), this, SLOT(on_recievedData())   );
+void Server::slotClientDisconnected()
+{
+    //QTcpSocket* clientSocket = ( QTcpSocket* )sender();
+    int Num=-1;
+    QTcpSocket* clientSocket = static_cast< QTcpSocket* >(sender());
+    clientSocket->close();
+    for(int i=0;i<count;i++)
+    {
+        if(Descriptor[i].sok->socketDescriptor()==-1) Num=i;
+    }
+    QString Disc="Disconected num: ";
+
+    for(int i=0;i<count;i++)
+    {
+        QTextStream str(Descriptor[i].sok);
+        str<<Disc;
+        str<<Num;
+        str<<flush;
+    }
+}
+
+void Server:: get_data()
+{
+    QTcpSocket* serverSocket = static_cast< QTcpSocket* >(sender());
+    QString temp = serverSocket->readAll();
+    qDebug()<<temp;
+
 }

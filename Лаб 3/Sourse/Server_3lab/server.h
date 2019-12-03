@@ -12,18 +12,31 @@ class Server : public QObject
     Q_OBJECT
 public:
     explicit Server(QObject *parent = nullptr);
+
+    struct Msok{
+        int desc;
+        QTcpSocket* sok;
+    };
+
 signals:
 
 public slots:
         void slotNewConnection();
-        //void slotClientDisconnected();
-        void on_newUserConnected();
+        void slotClientDisconnected();
+        void get_data();
+
 private:
+
     QTcpServer * mTcpServer;
     QTcpSocket * mTcpSocket;
 
 
-
 };
+
+
+
+
+
+
 
 #endif // SERVER_H

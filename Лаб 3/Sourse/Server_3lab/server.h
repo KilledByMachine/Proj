@@ -17,6 +17,7 @@ public:
         int desc;
         QTcpSocket* sok;
     };
+    void decoding(QString comand, int descriptor);
 
 signals:
 
@@ -29,8 +30,6 @@ private:
 
     QTcpServer * mTcpServer;
     QTcpSocket * mTcpSocket;
-
-
 };
 
 

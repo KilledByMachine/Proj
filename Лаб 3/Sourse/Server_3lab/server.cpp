@@ -14,9 +14,12 @@ Server::Server(QObject *parent) : QObject(parent)
     {
         qDebug() << "server is started";
     }
+
 }
 
-QList <Server:: Msok> Table;
+QList <Server:: Msok> Table; //табл дескрипт
+// створити окремий ліст, з огромними строками і своїми дескрипторами, через які вже конкретним користувачам будуть
+// відправлятись їх результати (на той чи іншй запит)
 void Server::slotNewConnection()
 {
 
@@ -58,8 +61,6 @@ void Server::slotClientDisconnected()
         str<<Num;
         str<<flush;
     }
-    // організувати видалення тоги чи іншого клієнта +++++
-
     //потом, організувати обробку запитів, і відправку зворотніх, мб прийдетсья запустити 2-3 клієнта щоби провірити
     //нормлаьно, а саме, щоби не приходила відповідь усім, а тільки нужному клієнту
     //псевдо клієнтам мб зробити нормлаьну форму запитів і тд. на зпити з бд, зробити заглушку
@@ -171,6 +172,97 @@ void Server:: decoding(QString command, int descriptor)
         else{
                qDebug()<<part_heder<<"?";
         }
+    }
+    if(part_heder=="login")
+    {
+        QString login,pass;
+        for (int i=pos;i<command.size();i++)
+        {
+            if(command[i]==':' || command[i]==';') break;
+            else
+               {
+                login.append(command[i]);
+                pos=i;
+            }
+        }
+        pos+=2;
+        for (int i=pos;i<command.size();i++)
+        {
+            if(command[i]==':' || command[i]==';') break;
+            else
+               {
+                pass.append(command[i]);
+                pos=i;
+            }
+        }
+        if(login.size()==0 || pass.size()==0)     //якщо парамтери пусті
+        {
+            qDebug()<<"no match param";
+            return;
+        }
+        else {
+            qDebug()<<login<<""<<pass;
+            //залогінити, нести в список юзерів,
+            //также передати налаштування
+        }
+
+
+    }
+    if(part_heder=="reg")
+    {
+        QString user,pass;
+        for (int i=pos;i<command.size();i++)
+        {
+            if(command[i]==':' || command[i]==';') break;
+            else
+               {
+                user.append(command[i]);
+                pos=i;
+            }
+        }
+        pos+=2;
+        for (int i=pos;i<command.size();i++)
+        {
+            if(command[i]==':' || command[i]==';') break;
+            else
+               {
+                pass.append(command[i]);
+                pos=i;
+            }
+        }
+        if(user.size()==0 || pass.size()==0)     //якщо парамтери пусті
+        {
+            qDebug()<<"no match param";
+            return;
+        }
+        else {
+            qDebug()<<user<<""<<pass;
+            //зареєструвати
+            //также налаштування потрібні дати
+        }
+
+
+    }
+    if(part_heder=="getconf")
+    {
+        QString key;
+        for (int i=pos;i<command.size();i++)
+        {
+            if(command[i]==':' || command[i]==';') break;
+            else
+               {
+                key.append(command[i]);
+                pos=i;
+            }
+        }
+        if(key.size()==0)
+        {
+            qDebug()<<"not enough";
+        }
+        else{
+            qDebug()<<key<<" "<<key.toInt();
+        }
+
     }
 
     //qDebug()<<part_heder<<" "<<comand[pos]<<comand.size()<<" "<<comand[comand.size()-1];

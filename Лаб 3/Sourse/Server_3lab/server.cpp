@@ -264,8 +264,49 @@ void Server:: decoding(QString command, int descriptor)
         }
 
     }
+    if(part_heder=="get")
+    {
+        QString size_of_get,sort_num,name;
+        for (int i=pos;i<command.size();i++)
+        {
+            if(command[i]==':' || command[i]==';') break;
+            else
+               {
+                size_of_get.append(command[i]);
+                pos=i;
+            }
+        }
+        pos+=2;
+        for (int i=pos;i<command.size();i++)
+        {
+            if(command[i]==':' || command[i]==';') break;
+            else
+               {
+                sort_num.append(command[i]);
+                pos=i;
+            }
+        }
+        pos+=2;
+        for (int i=pos;i<command.size();i++)
+        {
+            if(command[i]==':' || command[i]==';') break;
+            else
+               {
+                name.append(command[i]);
+                pos=i;
+            }
+        }
+        if(size_of_get.size()==0 || sort_num.size()==0 || name.size()==0)     //якщо парамтери пусті
+        {
+            qDebug()<<"no match param";
+            return;
+        }
+        else {
+            qDebug()<<size_of_get<<" "<<sort_num<<" "<<name;
+            //передача цих даних в фкцію створення запиту в бд
 
+        }
     //qDebug()<<part_heder<<" "<<comand[pos]<<comand.size()<<" "<<comand[comand.size()-1];
 
-
+        }
 }

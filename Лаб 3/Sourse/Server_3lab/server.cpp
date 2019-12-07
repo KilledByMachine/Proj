@@ -46,6 +46,7 @@ void Server::slotNewConnection()
 void Server::slotClientDisconnected()
 {
     int Num=-1;
+    qDebug()<<"DISC";
     QTcpSocket* clientSocket = static_cast< QTcpSocket* >(sender());
     clientSocket->close();
     for(int i=0;i<Table.size();i++)
@@ -245,7 +246,7 @@ void Server:: decoding(QString command, int descriptor)
     }
     if(part_heder=="getconf")
     {
-        QString key;
+        QString key;                //за дескриптором створювати табл для юзера, на тимчасові записи
         for (int i=pos;i<command.size();i++)
         {
             if(command[i]==':' || command[i]==';') break;
@@ -309,4 +310,124 @@ void Server:: decoding(QString command, int descriptor)
     //qDebug()<<part_heder<<" "<<comand[pos]<<comand.size()<<" "<<comand[comand.size()-1];
 
         }
+    if(part_heder=="changeconf")
+    {
+        QString keyid,low_r,hight_r,low_rate,hight_rate,sem,sorting_by,course,inst,year;
+        for (int i=pos;i<command.size();i++)
+        {
+            if(command[i]==':' || command[i]==';') break;
+            else
+               {
+                keyid.append(command[i]);
+                pos=i;
+            }
+        }
+        pos+=2;
+        for (int i=pos;i<command.size();i++)
+        {
+            if(command[i]==':' || command[i]==';') break;
+            else
+               {
+                low_r.append(command[i]);
+                pos=i;
+            }
+        }
+        pos+=2;
+        for (int i=pos;i<command.size();i++)
+        {
+            if(command[i]==':' || command[i]==';') break;
+            else
+               {
+                hight_r.append(command[i]);
+                pos=i;
+            }
+        }
+        pos+=2;
+        for (int i=pos;i<command.size();i++)
+        {
+            if(command[i]==':' || command[i]==';') break;
+            else
+               {
+                low_rate.append(command[i]);
+                pos=i;
+            }
+        }
+        pos+=2;
+        for (int i=pos;i<command.size();i++)
+        {
+            if(command[i]==':' || command[i]==';') break;
+            else
+               {
+                hight_rate.append(command[i]);
+                pos=i;
+            }
+        }
+        pos+=2;
+        for (int i=pos;i<command.size();i++)
+        {
+            if(command[i]==':' || command[i]==';') break;
+            else
+               {
+                sem.append(command[i]);
+                pos=i;
+            }
+        }
+        pos+=2;
+        for (int i=pos;i<command.size();i++)
+        {
+            if(command[i]==':' || command[i]==';') break;
+            else
+               {
+                sorting_by.append(command[i]);
+                pos=i;
+            }
+        }
+        pos+=2;
+        for (int i=pos;i<command.size();i++)
+        {
+            if(command[i]==':' || command[i]==';') break;
+            else
+               {
+                course.append(command[i]);
+                pos=i;
+            }
+        }
+        pos+=2;
+        for (int i=pos;i<command.size();i++)
+        {
+            if(command[i]==':' || command[i]==';') break;
+            else
+               {
+                inst.append(command[i]);
+                pos=i;
+            }
+        }
+        pos+=2;
+        for (int i=pos;i<command.size();i++)
+        {
+            if(command[i]==':' || command[i]==';') break;
+            else
+               {
+                year.append(command[i]);
+                pos=i;
+            }
+        }
+        qDebug()<<keyid<<low_r<<hight_r<<low_rate<<hight_rate<<sem<<sorting_by<<course<<inst<<year;
+        // keyid,low_r,hight_r,low_rate,hight_rate,sem,sorting_by,course,inst,year
+        if(keyid.size()==0 || low_r.size()==0 || hight_r.size()==0 ||low_rate.size()==0 ||hight_rate.size()==0
+                || sem.size()==0 ||sorting_by.size()==0 || course.size()==0 || inst.size()==0 || year.size()==0)
+            //якщо парамтери пусті
+        {
+            qDebug()<<"no match param";
+            return;
+        }
+        else {
+            //дофіга перевірок і конвертів з строки в нужні числа
+            //передача параметрів в обробку бд, тобто конверт і в якусь set_conf
+            qDebug()<<keyid<<low_r<<hight_r<<low_rate<<hight_rate<<sem<<sorting_by<<course<<inst<<year;
+
+        }
+    //qDebug()<<part_heder<<" "<<comand[pos]<<comand.size()<<" "<<comand[comand.size()-1];
+
+     }
 }

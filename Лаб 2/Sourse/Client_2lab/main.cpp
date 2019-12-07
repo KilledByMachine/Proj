@@ -37,10 +37,7 @@ int main(int argc, char *argv[])
     QObject:: connect(&c,&WinMain::show_log,&a,&Login::show);
     QObject:: connect(&b,&Reg::show_main,&c,&WinMain::show);
     QObject:: connect(&b,&Reg::show_log,&a,&Login::show);
-    /*
-     *  перевизначити тТСР сокет, свій клас, перевизначити сервер, тоже свій
-     *  клас, + визначити сокети і сигнали. для нормальних конектів з обох сторін
-    */
+
 
     a.show();
 

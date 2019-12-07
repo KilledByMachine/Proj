@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QObject>
+#include <QTcpSocket>
 
 namespace Ui {
 class Reg;

@@ -21,3 +21,8 @@ void WinMain::on_pushButton_clicked()
     emit show_log();
     close();
 }
+
+void WinMain:: get_keyID(int key){
+    MyKey=key;
+    qDebug()<<key;
+}

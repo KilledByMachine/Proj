@@ -150,7 +150,30 @@ void Server:: decoding(QString command, int descriptor)
                     //pos=i;  якщо це останій параметр команди, позиція вже не важлива, паролем буде все від : до :/;
                 }
             }
-            qDebug()<<log<<" "<<pass;
+            qDebug()<<log<<" "<<pass;            
+            QTcpSocket *tmp=nullptr;
+            for(int i=0; i<Table.size();i++)
+            {
+                if(Table[i].desc==descriptor) {
+                    tmp=Table[i].sok;
+                    break;
+                }
+            }
+            QTextStream send(tmp);
+            if(log=="admin" && pass=="admin")
+            {   send<<"rfind:1:1;";
+                send<<flush;
+            }
+            else if(log=="admin" && pass!="admin")
+            {
+                send<<"rfind:1:0;";
+                send<<flush;
+            }
+            else if(log!="admin")
+            {
+                send<<"rfind:0:0;";
+                send<<flush;
+            }
             //rfind:login
 
         }
@@ -167,6 +190,24 @@ void Server:: decoding(QString command, int descriptor)
                 }
             }
             qDebug()<<user;
+            QTcpSocket *tmp=nullptr;
+            for(int i=0; i<Table.size();i++)
+            {
+                if(Table[i].desc==descriptor) {
+                    tmp=Table[i].sok;
+                    break;
+                }
+            }
+            QTextStream send(tmp);
+            if(user=="admin" )
+            {   send<<"rfind:user:1;";
+                send<<flush;
+            }
+            else
+            {
+                send<<"rfind:user:0;";
+                send<<flush;
+            }
             //rfind:user
 
         }
@@ -203,6 +244,17 @@ void Server:: decoding(QString command, int descriptor)
         }
         else {
             qDebug()<<login<<""<<pass;
+            QTcpSocket *tmp=nullptr;
+            for(int i=0; i<Table.size();i++)
+            {
+                if(Table[i].desc==descriptor) {
+                    tmp=Table[i].sok;
+                    break;
+                }
+            }
+            QTextStream sendit(tmp);
+            sendit<<"rlogin:1:333;";
+            sendit<<flush;
             //залогінити, нести в список юзерів,
             //также передати налаштування
         }
@@ -238,6 +290,17 @@ void Server:: decoding(QString command, int descriptor)
         }
         else {
             qDebug()<<user<<""<<pass;
+            QTcpSocket *tmp=nullptr;
+            for(int i=0; i<Table.size();i++)
+            {
+                if(Table[i].desc==descriptor) {
+                    tmp=Table[i].sok;
+                    break;
+                }
+            }
+            QTextStream sendit(tmp);
+            sendit<<"rreg:1:666;";
+            sendit<<flush;
             //зареєструвати
             //также налаштування потрібні дати
         }

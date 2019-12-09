@@ -19,11 +19,18 @@ public:
     explicit Login(QWidget *parent = nullptr);
     ~Login();
     void chek_availible(QString temp, int num);
+    void decoding(QString comand);
 signals:
     void show_main();
     void show_reg();
+    void send_ID(int);
+public slots:
+
+    void start();
+
 
 private slots:
+    void get_from_serv();
     void on_pushButton_clicked();
 
     void on_pushButton_2_clicked();
@@ -31,6 +38,7 @@ private slots:
     void on_lineEdit_textChanged(const QString &arg1);
 
     void on_lineEdit_2_textChanged(const QString &arg1);
+
 
 private:
     Ui::Login *ui;

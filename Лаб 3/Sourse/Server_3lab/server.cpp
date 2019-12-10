@@ -33,11 +33,12 @@ void Server::slotNewConnection()
     Table.insert(Table.end(),NewUser);
     str.setCodec("UTF-8");
     QString s="Текст, text";
-    str <<s;
-    s="text";
+    //QString s="send:First : Name : par :69.765:4.56:2:2017:I:IKNI:1234;";
+    //s="text";
     str <<s;
     str<<flush;
-    qDebug() << "New Connect";    
+    qDebug() << "New Connect";
+    qDebug() <<mTcpSocket->socketDescriptor();
     connect(NewUser.sok, SIGNAL(disconnected()), this, SLOT(slotClientDisconnected()));
     connect(NewUser.sok,SIGNAL(readyRead()),this,SLOT(get_data()));
 }
@@ -75,7 +76,7 @@ void Server:: get_data()
 {
     QTcpSocket* serverSocket = static_cast< QTcpSocket* >(sender());
     QString temp = serverSocket->readAll();
-    //qDebug()<<temp;
+    qDebug()<<temp;
     decoding(temp,serverSocket->socketDescriptor());
 
 }

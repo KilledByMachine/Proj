@@ -41,10 +41,12 @@ int main(int argc, char *argv[])
     QObject:: connect(&a,&Login::show_reg,&b,&Reg::start);
     QObject:: connect(&b,&Reg::show_log,&a,&Login::start);
     QObject:: connect(&c,&WinMain::show_log,&a,&Login::start);
-    // ще добавити старт для мейна
+    QObject:: connect(&a,&Login::show_main,&c,&WinMain::start);
+    QObject:: connect(&b,&Reg::show_main,&c,&WinMain::start);
+
     QObject:: connect(&a,&Login::send_ID,&c,&WinMain::get_keyID);
     QObject:: connect(&b,&Reg::send_ID,&c,&WinMain::get_keyID);
-    //а блятЬ! горить.. новий лять синтаксис, а що? а йоме не треба вказувати параметри... ухх
+
 
     a.show();
 

@@ -241,9 +241,9 @@ void Reg:: decoding(QString command)
         else {
             if(reg_res[0]=='1')
             {
-                emit send_ID(keyID);
-                emit show_main();
                 sok->disconnectFromHost();
+                emit send_ID(keyID);
+                emit show_main();                
                 close();
 
             }

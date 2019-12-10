@@ -142,7 +142,7 @@ void Login:: get_from_serv()
     QString s = sok->readAll();
     //QByteArray data = my->readAll();
     //login буде відправлятись з обрботчика після декодування rfind
-    qDebug() << s;
+    //qDebug() << s;
     decoding(s);
 }
 
@@ -246,9 +246,9 @@ void Login:: decoding(QString command)
         else {
             if(login_found[0]=='1')
             {
+                sok->disconnectFromHost();
                 emit send_ID(keyID);
                 emit show_main();
-                sok->disconnectFromHost();
                 close();
 
             }

@@ -248,7 +248,8 @@ void WinMain:: decoding(QString command)
             qDebug()<<keyid<<low_r<<hight_r<<low_rate<<hight_rate<<sem<<sorting_by<<course<<inst<<year;
             bool convert; int to_convert=0;
             my_config temp;
-            MyKey = keyid.toInt(&convert,10);
+            int Key = keyid.toInt(&convert,10);
+            if(MyKey != Key) { qDebug()<<"Bad keyID"; return;}
             if(!convert){ qDebug()<<"Bad convert"; return;}
             temp.low_r=low_r.toDouble(&convert);
             if(!convert){ qDebug()<<"Bad convert"; return;}
@@ -282,7 +283,7 @@ void WinMain:: decoding(QString command)
             }
             if(!convert){ qDebug()<<"Bad convert"; return;}
             temp.sorting_by=sorting_by.toInt(&convert,10);
-            if(!convert){ qDebug()<<"Bad convert"; return;}
+            if(!convert && temp.sorting_by<=2){ qDebug()<<"Bad convert"; return;}
             to_convert=course.toInt(&convert,16);
             temp.c4=to_convert/8; to_convert%=8;
             temp.c3=to_convert/4; to_convert%=4;
@@ -301,6 +302,13 @@ void WinMain:: decoding(QString command)
             temp._2016=to_convert/2; to_convert%=2;
             temp._2015=to_convert/1;
             if(!convert){ qDebug()<<"Bad convert"; return;}
+            else
+            {
+                //перекидаємо нові налаштування, виклик фукнцію для налаштування по вікні
+                Config = temp;
+
+
+            }
 
         }
      }
@@ -420,4 +428,56 @@ void WinMain:: decoding(QString command)
 void WinMain::on_prev_botton_clicked()
 {
     //ui->textEdit->setText("CHO BLAD");
+    ui->comboBox->setCurrentIndex(2);
+}
+void WinMain::change_conf()
+{
+    //low_r,hight_r,low_rate,hight_rate,sem,sorting_by,course,inst,year;
+    ui->doubleSpin_from->setValue(Config.low_r);
+    ui->doubleSpin_to->setValue(Config.hight_r);
+    ui->doubleSpin_from_2->setValue(Config.low_rate);
+    ui->doubleSpin_to_2->setValue(Config.hight_rate);
+    ui->sem1->setChecked(Config.sem1);
+    ui->sem2->setChecked(Config.sem2);
+    ui->comboBox->setCurrentIndex(Config.sorting_by);
+    ui->course1->setChecked(Config.c1);
+    ui->course2->setChecked(Config.c2);
+    ui->course3->setChecked(Config.c3);
+    ui->course4->setChecked(Config.c4);
+    ui->igdg->setChecked(Config.igdg);
+    ui->igsn->setChecked(Config.igsn);
+    ui->ikni->setChecked(Config.ikni);
+    ui->ikta->setChecked(Config.ikta);
+    ui->action2015->setChecked(Config._2015);
+    ui->action2016->setChecked(Config._2016);
+    ui->action2017->setChecked(Config._2017);
+    ui->action2018->setChecked(Config._2018);
+}
+void WinMain:: config_change()
+{
+    Config.low_r=ui->doubleSpin_from->value();
+    Config.hight_r=ui->doubleSpin_to->value();
+    Config.low_r=ui->doubleSpin_from_2->value();
+    Config.hight_rate=ui->doubleSpin_to_2->value();
+    Config.sem1=ui->sem1->isChecked();
+    Config.sem2=ui->sem2->isChecked();
+    Config.sorting_by=ui->comboBox->currentIndex();
+    Config.c1=ui->course1->isChecked();
+    Config.c2=ui->course2->isChecked();
+    Config.c3=ui->course3->isChecked();
+    Config.c4=ui->course4->isChecked();
+    Config.igdg=ui->igdg->isChecked();
+    Config.igsn=ui->igsn->isChecked();
+    Config.ikni=ui->ikni->isChecked();
+    Config.ikta=ui->ikta->isChecked();
+    Config._2015=ui->action2015->isChecked();
+    Config._2016=ui->action2016->isChecked();
+    Config._2017=ui->action2017->isChecked();
+    Config._2018=ui->action2018->isChecked();
+}
+
+void WinMain::on_comboBox_currentIndexChanged(int index)
+{
+    qDebug()<<index;
+    //рейтинг - 0, бал - 1, ім - 2
 }

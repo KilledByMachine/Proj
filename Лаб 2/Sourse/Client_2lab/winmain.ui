@@ -348,10 +348,10 @@
      <property name="title">
       <string>По інститутах</string>
      </property>
-     <addaction name="action_7"/>
-     <addaction name="action_8"/>
-     <addaction name="action_10"/>
-     <addaction name="action_11"/>
+     <addaction name="igdg"/>
+     <addaction name="igsn"/>
+     <addaction name="ikni"/>
+     <addaction name="ikta"/>
     </widget>
     <widget class="QMenu" name="menu_3">
      <property name="title">
@@ -361,8 +361,8 @@
       <property name="title">
        <string>Семестри</string>
       </property>
-      <addaction name="action1"/>
-      <addaction name="action2"/>
+      <addaction name="sem1"/>
+      <addaction name="sem2"/>
      </widget>
      <addaction name="action2015"/>
      <addaction name="action2016"/>
@@ -374,10 +374,10 @@
      <property name="title">
       <string>Курси</string>
      </property>
-     <addaction name="action1_2"/>
-     <addaction name="action2_2"/>
-     <addaction name="action3"/>
-     <addaction name="action4"/>
+     <addaction name="course1"/>
+     <addaction name="course2"/>
+     <addaction name="course3"/>
+     <addaction name="course4"/>
     </widget>
     <addaction name="separator"/>
     <addaction name="menu_2"/>
@@ -419,7 +419,7 @@
     <string>2018</string>
    </property>
   </action>
-  <action name="action1">
+  <action name="sem1">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -427,7 +427,7 @@
     <string>1</string>
    </property>
   </action>
-  <action name="action2">
+  <action name="sem2">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -435,7 +435,7 @@
     <string>2</string>
    </property>
   </action>
-  <action name="action_7">
+  <action name="igdg">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -443,7 +443,7 @@
     <string>ІГДГ</string>
    </property>
   </action>
-  <action name="action_8">
+  <action name="igsn">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -451,15 +451,7 @@
     <string>ІГСН</string>
    </property>
   </action>
-  <action name="action_9">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>ІЕСК</string>
-   </property>
-  </action>
-  <action name="action_10">
+  <action name="ikni">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -467,7 +459,7 @@
     <string>ІКНІ</string>
    </property>
   </action>
-  <action name="action_11">
+  <action name="ikta">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -475,7 +467,7 @@
     <string>ІКТА</string>
    </property>
   </action>
-  <action name="action1_2">
+  <action name="course1">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -483,7 +475,7 @@
     <string>1</string>
    </property>
   </action>
-  <action name="action2_2">
+  <action name="course2">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -491,7 +483,7 @@
     <string>2</string>
    </property>
   </action>
-  <action name="action3">
+  <action name="course3">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -499,7 +491,7 @@
     <string>3</string>
    </property>
   </action>
-  <action name="action4">
+  <action name="course4">
    <property name="checkable">
     <bool>true</bool>
    </property>

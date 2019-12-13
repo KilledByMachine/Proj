@@ -326,6 +326,24 @@ void Server:: decoding(QString command, int descriptor)
         }
         else{
             qDebug()<<key<<" "<<key.toInt();
+            //send config
+            //QString keyid,low_r,hight_r,low_rate,hight_rate,sem,sorting_by,course,inst,year;
+            //зробтити відправку дефолтних, тут щось придумаю, що попаде кароч
+            //потім ці налашт будуть зберігатись в бд разом з іменем юзера в форматі строки, при конекті буде отправля
+            //тись строка без перевірок
+            QString s="putconf:"+key+":67.345:89.567:3.45:4.48:2:1:A:8:8;";
+            QTcpSocket *tmp=nullptr;
+            for(int i=0; i<Table.size();i++)
+            {
+                if(Table[i].desc==descriptor) {
+                    tmp=Table[i].sok;
+                    break;
+                }
+            }
+            QTextStream send(tmp);
+            send<<s;
+            send<<flush;
+
         }
 
     }

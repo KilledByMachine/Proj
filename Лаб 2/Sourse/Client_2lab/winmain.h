@@ -45,7 +45,8 @@ public:
     explicit WinMain(QWidget *parent = nullptr);
     ~WinMain();
     void decoding(QString command);
-
+    void change_conf();
+    void config_change();
 
 
 signals:
@@ -60,10 +61,13 @@ private slots:
 
     void on_prev_botton_clicked();
 
+    void on_comboBox_currentIndexChanged(int index);
+
 private:
     Ui::WinMain *ui;
     QTcpSocket * sok;
     int MyKey;
+    my_config Config;
 
 };
 

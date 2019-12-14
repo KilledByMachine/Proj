@@ -14,6 +14,33 @@ Server::Server(QObject *parent) : QObject(parent)
     {
         qDebug() << "server is started";
     }
+    //спроба конекту
+    //QSqlDatabase db = QSqlDatabase::addDatabase( "QODBC3" );
+
+    db = QSqlDatabase::addDatabase("QODBC");
+    db.setDatabaseName("DRIVER={SQL Server};SERVER=DESKTOP-RAPBD2P;Database=Lab2;");
+    db.setUserName("admin");
+    db.setPassword("admin");
+
+
+    //db.setDatabaseName( "Driver={SQL Server};SERVERNODE=localhost;Database=Lab2;Trusted_Connection=yes;" );
+    //"Server=MSSQL1;Database=AdventureWorks;Integrated Security=true;    DRIVER={SQL Native Client};"
+    // QODBC QSQLITE
+        if (!db.open())
+        {
+             qDebug()<<"!&737hhoijwefaf";
+        }
+        else{
+            qDebug()<<"Con?";
+            QSqlQuery query;
+            query.exec("SELECT * FROM Client");
+            query.next();
+            while (query.next()) {
+                     int id = query.value(0).toInt();
+                     QString name = query.value(1).toString();
+                     qDebug() << id << name;
+                 }
+        }
 
 }
 

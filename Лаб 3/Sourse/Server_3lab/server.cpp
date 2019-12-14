@@ -18,7 +18,7 @@ Server::Server(QObject *parent) : QObject(parent)
     //QSqlDatabase db = QSqlDatabase::addDatabase( "QODBC3" );
 
     db = QSqlDatabase::addDatabase("QODBC");
-    db.setDatabaseName("DRIVER={SQL Server};SERVER=DESKTOP-RAPBD2P;Database=Lab2;");
+    db.setDatabaseName("DRIVER={SQL Server};SERVER=DESKTOP-RAPBD2P;Database=IPZ;");
     db.setUserName("admin");
     db.setPassword("admin");
 
@@ -33,15 +33,49 @@ Server::Server(QObject *parent) : QObject(parent)
         else{
             qDebug()<<"Con?";
             QSqlQuery query;
-            query.exec("SELECT * FROM Client");
-            query.next();
+            query.last();
+            query.exec("SELECT * FROM Records");
+            //query.next();
             while (query.next()) {
                      int id = query.value(0).toInt();
                      QString name = query.value(1).toString();
-                     qDebug() << id << name;
+                     QString lastname = query.value(2).toString();
+                     QString l = query.value(3).toString();
+                     for(int i =0;i<lastname.size();i++){
+                         if(lastname[i]==',')
+                            {
+                             lastname[i]='.';
+                             break;
+                            }
+                         //я напартачив з записами в самій бд, буду конвертити тут)
+                     }
+                     qDebug() << id << name<<lastname<<l<<lastname.toDouble()<<l.toDouble();
+                     lastname.clear();
                  }
-        }
 
+        }
+        /*
+        QString str = "/a/b/c/";
+        QStringList parts;
+
+        parts = str.split('/'); //розбивати строку ввот так, мб потом замінити цей метод для обробки запитів? auto
+        //while (parts.size >1 <5
+        parts.erase( parts.begin());
+
+        QString temp;
+        temp=parts[0];
+        qDebug()<<parts<< temp;     parts.erase( parts.begin());
+        qDebug()<<parts<<parts.size();
+        parts.erase( parts.begin());
+        qDebug()<<parts<<parts.size();
+        parts.erase( parts.begin());
+        qDebug()<<parts<<parts.size();
+        parts.erase( parts.begin());
+
+        //qDebug()<<parts[0];
+        //parts.erase( parts.begin());
+       // qDebug()<<parts[0];
+       */
 }
 
 QList <Server:: Msok> Table; //табл дескрипт
@@ -227,16 +261,36 @@ void Server:: decoding(QString command, int descriptor)
                 }
             }
             QTextStream send(tmp);
-            if(user=="admin" )
-            {   send<<"rfind:user:1;";
-                send<<flush;
-            }
-            else
+            QSqlQuery query;
+            qDebug()<<"Start find";
+            if(db.isOpen())
             {
-                send<<"rfind:user:0;";
+                qDebug()<<"select * from Users where Name='"+user+"'";
+                query.exec("select * from Users where Name='"+user+"'");
+                if(query.next()){
+                    send<<"rfind:user:1;";
+                    send<<flush;
+                }
+                else{
+                    send<<"rfind:user:0;";
+                    send<<flush;
+                }
+            }
+            else{
+                qDebug()<<"cant find! db doesnt cennect";
+                send<<"rfind:user:1;";
                 send<<flush;
+
             }
             //rfind:user
+            /*
+             * QSqlQuery query;
+                query.last();
+                query.exec("SELECT * FROM Records");
+                if(query.last()){
+                qDebug()<<query.value(0).toString()<<query.value(1).toString();
+                qDebug()<<query.value(0).toString()<<query.value(1).toString();
+            }*/
 
         }
         else{

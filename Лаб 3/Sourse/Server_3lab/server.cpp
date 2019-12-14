@@ -33,7 +33,6 @@ Server::Server(QObject *parent) : QObject(parent)
         else{
             qDebug()<<"Con?";
             QSqlQuery query;
-            query.last();
             query.exec("SELECT * FROM Records");
             //query.next();
             while (query.next()) {
@@ -79,6 +78,12 @@ Server::Server(QObject *parent) : QObject(parent)
 }
 
 QList <Server:: Msok> Table; //табл дескрипт
+//ліст законекчених юзерів їхні дексриптори, да ще одна табл бо вже тут будуть тимчасові налаштування, проміжні табл
+// і можливо інша інфа.. пока в голову не приходить, жах, тре закривтаи інші дири
+
+
+
+
 // створити окремий ліст, з огромними строками і своїми дескрипторами, через які вже конкретним користувачам будуть
 // відправлятись їх результати (на той чи іншй запит)
 void Server::slotNewConnection()
@@ -209,7 +214,6 @@ void Server:: decoding(QString command, int descriptor)
                 else
                    {
                     pass.append(command[i]);
-                    //pos=i;  якщо це останій параметр команди, позиція вже не важлива, паролем буде все від : до :/;
                 }
             }
             qDebug()<<log<<" "<<pass;            
@@ -222,21 +226,34 @@ void Server:: decoding(QString command, int descriptor)
                 }
             }
             QTextStream send(tmp);
-            if(log=="admin" && pass=="admin")
-            {   send<<"rfind:1:1;";
-                send<<flush;
-            }
-            else if(log=="admin" && pass!="admin")
+            QSqlQuery query;
+            qDebug()<<"Start find login";
+            if(db.isOpen())
             {
-                send<<"rfind:1:0;";
-                send<<flush;
+                qDebug()<<"select * from Users where Name='"+log+"'";
+                query.exec("select * from Users where Name='"+log+"'");
+                if(query.next()){
+                    if(query.value(2).toString()==pass)
+                    {
+                        send<<"rfind:1:1;";
+                        send<<flush;
+
+                    }else{
+                        send<<"rfind:1:0;";
+                        send<<flush;
+                    }
+                }
+                else{
+                    send<<"rfind:0:0;";
+                    send<<flush;
+                }
             }
-            else if(log!="admin")
-            {
+            else{
+                qDebug()<<"cant find! db doesnt cennect";
                 send<<"rfind:0:0;";
                 send<<flush;
+
             }
-            //rfind:login
 
         }
         else if (part2=="user")
@@ -282,16 +299,6 @@ void Server:: decoding(QString command, int descriptor)
                 send<<flush;
 
             }
-            //rfind:user
-            /*
-             * QSqlQuery query;
-                query.last();
-                query.exec("SELECT * FROM Records");
-                if(query.last()){
-                qDebug()<<query.value(0).toString()<<query.value(1).toString();
-                qDebug()<<query.value(0).toString()<<query.value(1).toString();
-            }*/
-
         }
         else{
                qDebug()<<part_heder<<"?";
@@ -334,11 +341,39 @@ void Server:: decoding(QString command, int descriptor)
                     break;
                 }
             }
-            QTextStream sendit(tmp);
-            sendit<<"rlogin:1:333;";
-            sendit<<flush;
-            //залогінити, нести в список юзерів,
-            //также передати налаштування
+            QTextStream send(tmp);
+            send<<"rlogin:1:333;";
+            send<<flush;
+            QSqlQuery query;
+            qDebug()<<"Start find login";
+            if(db.isOpen())
+            {
+                qDebug()<<"select * from Users where Name='"+login+"'";
+                query.exec("select * from Users where Name='"+login+"'");
+                if(query.next()){
+                    if(query.value(2).toString()==pass)
+                    {
+                        send<<"rlogin:1:"+query.value(0).toString()+';';
+                        send<<flush;
+                        //залогінити, занести в список юзерів,
+                    }
+                    else
+                    {
+                        send<<"rfind:1:0;";
+                        send<<flush;
+                    }
+                }
+                else{
+                    send<<"rfind:0:0;";
+                    send<<flush;
+                }
+            }
+            else{
+                qDebug()<<"cant login! db doesnt cennect";
+                send<<"rlogin:0:0;";
+                send<<flush;
+
+            }
         }
 
 
@@ -380,9 +415,46 @@ void Server:: decoding(QString command, int descriptor)
                     break;
                 }
             }
-            QTextStream sendit(tmp);
-            sendit<<"rreg:1:666;";
-            sendit<<flush;
+            QTextStream send(tmp);
+            send<<"rreg:1:666;";
+            send<<flush;
+            QSqlQuery query;
+            int new_id;
+            qDebug()<<"reg this user"+user;
+            if(db.isOpen())
+            {
+                qDebug()<<"select * from Users where Name='"+user+"'";
+                query.exec("select * from Users where Name='"+user+"'");
+                if(query.next()){
+                       send<<"rreg:0:0;";
+                       send<<flush;
+                }
+                else{
+                    //":67.345:89.567:3.45:4.48:2:1:A:8:8;"
+                    query.exec("select * from Users");
+                    if(query.last()){
+                        new_id=query.value(0).toInt()+1; //VALUES (1001, 'Thad Beaumont', 65000)
+                        QString temp; temp.setNum(new_id);
+                        QString new_query="insert into Users values("+temp+",'"+user+"','"
+                                +pass+"',':67.345:89.567:3.45:4.48:2:1:A:8:8;')";
+                        query.exec(new_query);
+                        send<<"rreg:1:";
+                        send<<new_id;
+                        send<<";";
+                        send<<flush;
+
+                    }
+                    else{
+                        qDebug()<<"empty Users!";
+                    }
+                }
+            }
+            else{
+                qDebug()<<"db doesnt cennect";
+                send<<"rreg:0:0;";
+                send<<flush;
+
+            }
             //зареєструвати
             //также налаштування потрібні дати
         }
@@ -412,7 +484,7 @@ void Server:: decoding(QString command, int descriptor)
             //зробтити відправку дефолтних, тут щось придумаю, що попаде кароч
             //потім ці налашт будуть зберігатись в бд разом з іменем юзера в форматі строки, при конекті буде отправля
             //тись строка без перевірок
-            QString s="putconf:"+key+":67.345:89.567:3.45:4.48:2:1:A:8:8;";
+            QString default_conf="putconf:"+key+":67.345:89.567:3.45:4.48:2:1:A:8:8;";
             QTcpSocket *tmp=nullptr;
             for(int i=0; i<Table.size();i++)
             {
@@ -422,9 +494,26 @@ void Server:: decoding(QString command, int descriptor)
                 }
             }
             QTextStream send(tmp);
-            send<<s;
-            send<<flush;
-
+            QSqlQuery query;
+            qDebug()<<"Send Conf";
+            if(db.isOpen())
+            {
+                qDebug()<<"select * from Users where ID='"+key+"'";
+                query.exec("select * from Users where ID='"+key+"'");
+                if(query.next()){
+                   send<<"putconf:"+key+query.value(3).toString();
+                   send<<flush;
+                }
+                else{
+                    send<<default_conf;
+                    send<<flush;
+                }
+            }
+            else{
+                qDebug()<<"db doesnt cennect";
+                send<<"putconf:0:00.999:00.999:0.99:0.99:0:0:0:0:0;";
+                send<<flush;
+            }
         }
 
     }

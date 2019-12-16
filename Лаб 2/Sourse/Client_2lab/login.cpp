@@ -26,6 +26,8 @@ void Login:: start(){
     sok=new QTcpSocket(this);
     connect(sok,SIGNAL(readyRead()),this,SLOT(get_from_serv()));
     sok->connectToHost(QHostAddress::LocalHost,6000);
+    //sok->connectToHost(QHostAddress("178.212.111.37"),6000);
+    //178.212.111.37
     QMessageBox msgBox;
     msgBox.setText("ТРАБЛ!");
     msgBox.setInformativeText("Проблеми з підключенням до серверу. \nСпробувати підключитись знову?");
@@ -246,6 +248,8 @@ void Login:: decoding(QString command)
         else {
             if(login_found[0]=='1')
             {
+                ui->lineEdit->clear();
+                ui->lineEdit_2->clear();
                 sok->disconnectFromHost();
                 emit send_ID(keyID);
                 emit show_main();

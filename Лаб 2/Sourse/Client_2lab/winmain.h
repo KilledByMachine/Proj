@@ -32,6 +32,22 @@ struct my_config{
     bool _2016;
     bool _2015;
 };
+struct table_records{
+    //rate,rate2,course , year ,sem ,inst
+    QString fname;
+    QString lname;
+    QString pname;
+    QString rate;
+    QString rate2;
+    QString course;
+    QString year;
+    QString sem;
+    QString inst;
+    QString s1;
+    QString s2;
+    QString s3;
+};
+
 bool operator ==(const my_config& left, const my_config& right);
 
 bool operator!=(const my_config& left, const my_config& right);
@@ -47,6 +63,8 @@ public:
     void decoding(QString command);
     void change_conf();
     void config_change();
+    QString convert_conf();
+    void update_table();
 
 
 signals:
@@ -63,11 +81,54 @@ private slots:
 
     void on_comboBox_currentIndexChanged(int index);
 
+    void on_search_name_clicked();
+
+    void on_action2015_changed();
+
+    void on_action2016_changed();
+
+    void on_action2017_changed();
+
+    void on_action2018_changed();
+
+    void on_sem1_changed();
+
+    void on_sem2_changed();
+
+    void on_igdg_changed();
+
+    void on_igsn_changed();
+
+    void on_ikni_changed();
+
+    void on_ikta_changed();
+
+    void on_course1_changed();
+
+    void on_course2_changed();
+
+    void on_course3_changed();
+
+    void on_course4_changed();
+
+    void on_doubleSpin_from_valueChanged(double arg1);
+
+    void on_doubleSpin_to_valueChanged(double arg1);
+
+    void on_doubleSpin_from_2_valueChanged(double arg1);
+
+    void on_doubleSpin_to_2_valueChanged(double arg1);
+
 private:
     Ui::WinMain *ui;
     QTcpSocket * sok;
     int MyKey;
     my_config Config;
+    my_config Sended_conf;
+    bool config_change_enable=false;
+    int Nres=0;
+    int now=0;
+    int next=0;
 
 };
 

@@ -6,6 +6,10 @@ WinMain::WinMain(QWidget *parent) :
     ui(new Ui::WinMain)
 {
     ui->setupUi(this);
+    //ui->tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    //ui->tableWidget->setEditTriggers(QAbstractItemView::AllEditTriggers);
+    //table.setEditTriggers(QAbstractItemView::NoEditTriggers);
+
 }
 
 WinMain::~WinMain()
@@ -54,14 +58,17 @@ void WinMain:: start(){
         send<<';';
         send<<flush;
     }
+    Sended_conf.sorting_by=13; // щоби налаштування не співпали
 
 }
 
+QList <table_records> My_Table;
 void WinMain::on_pushButton_clicked()
 {
     //ui->doubleSpin_from_2->setValue(13.133);
     //ui->action1->setChecked(false); true\flase
     //qDebug()<<ui->action1->isChecked();
+    //ui->textEdit->clear();
     sok->disconnectFromHost();
     emit show_log();
     close();
@@ -72,14 +79,46 @@ void WinMain:: get_keyID(int key){
     qDebug()<<key;
 }
 
+void WinMain:: update_table(){
+    if(now==0 && next==0){
+        if(My_Table.size()<=10){
+            ui->prev_botton->setDisabled(true);
+            ui->next_button->setDisabled(true);
+            for(int i=0;i<My_Table.size();i++){
+
+                    ui->tableWidget->setItem(i,0,new QTableWidgetItem(My_Table[now+i].fname));
+                    ui->tableWidget->setItem(i,1,new QTableWidgetItem(My_Table[now+i].lname));
+                    ui->tableWidget->setItem(i,2,new QTableWidgetItem(My_Table[now+i].pname));
+                    ui->tableWidget->setItem(i,3,new QTableWidgetItem(My_Table[now+i].rate));
+                    ui->tableWidget->setItem(i,4,new QTableWidgetItem(My_Table[now+i].rate2));
+                    ui->tableWidget->setItem(i,5,new QTableWidgetItem(My_Table[now+i].course));
+                    ui->tableWidget->setItem(i,6,new QTableWidgetItem(My_Table[now+i].year));
+                    ui->tableWidget->setItem(i,7,new QTableWidgetItem(My_Table[now+i].sem));
+                    ui->tableWidget->setItem(i,8,new QTableWidgetItem(My_Table[now+i].inst));
+
+                    //0-імя 1-прізв 2 - по б 3-рейт 4-сер б 5-курс 6-рік 7-інст
+
+            }
+        }
+    }
+}
+
 void WinMain:: get_from_serv()
 {
 
-    QString s = sok->readAll();
-    //QByteArray data = my->readAll();
-    //login буде відправлятись з обрботчика після декодування rfind
-    qDebug() << s;
-    decoding(s);
+    QString s = sok->readAll();     //або розбивати вручну по 1 команді і на декодування, або запустити цикл з сплітом
+    QString part_decoding;
+    part_decoding.clear();
+    for(int i=0;i<s.size();i++){
+        if(s[i]==';'){
+            decoding(part_decoding+';');
+            part_decoding.clear();
+        }
+        else{
+            part_decoding.append(s[i]);
+        }
+    }
+    //qDebug() << "FROM GET!!-----"<<part_decoding;
 }
 void WinMain:: decoding(QString command)
 {
@@ -126,6 +165,7 @@ void WinMain:: decoding(QString command)
         }
         else {
             qDebug()<<num<<" - кількість пришедших результатів";
+            Nres=num; //коли н дойде до 0, обновити табл
         }
     }
     if(part_heder=="putconf")
@@ -230,6 +270,11 @@ void WinMain:: decoding(QString command)
                 pos=i;
             }
         }
+        if(keyid=="0"){
+            qDebug()<<"Bad ID";
+            return;
+
+        }
         // keyid,low_r,hight_r,low_rate,hight_rate,sem,sorting_by,course,inst,year
         if(keyid.size()==0 || low_r.size()==0 || hight_r.size()==0 ||low_rate.size()==0 ||hight_rate.size()==0
                 || sem.size()==0 ||sorting_by.size()==0 || course.size()==0 || inst.size()==0 || year.size()==0)
@@ -306,41 +351,21 @@ void WinMain:: decoding(QString command)
             {
                 //перекидаємо нові налаштування, виклик фукнцію для налаштування по вікні
                 Config = temp;
-
-
+                config_change_enable=false;
+                change_conf();
             }
 
         }
      }
     if(part_heder=="send")
     {
-        QString fname,lname,pname,rate,rate2,course , year ,sem ,inst,number;
+        QString name,rate,rate2,course , year ,sem ,inst,n1,n2,n3;
         for (int i=pos;i<command.size();i++)
         {
             if(command[i]==':' || command[i]==';') break;
             else
                {
-                fname.append(command[i]);
-                pos=i;
-            }
-        }
-        pos+=2;
-        for (int i=pos;i<command.size();i++)
-        {
-            if(command[i]==':' || command[i]==';') break;
-            else
-               {
-                lname.append(command[i]);
-                pos=i;
-            }
-        }
-        pos+=2;
-        for (int i=pos;i<command.size();i++)
-        {
-            if(command[i]==':' || command[i]==';') break;
-            else
-               {
-                pname.append(command[i]);
+                name.append(command[i]);
                 pos=i;
             }
         }
@@ -410,26 +435,106 @@ void WinMain:: decoding(QString command)
             if(command[i]==':' || command[i]==';') break;
             else
                {
-                number.append(command[i]);
+                n1.append(command[i]);
                 pos=i;
             }
         }
         pos+=2;
-        // QString fname,lname,pname,rate,rate2,course , year ,sem ,inst,number;
-        //занесення в табл, відображення і тд
-        qDebug()<<"!&!&&@&!&&!&!";
-        ui->textEdit->append(fname+lname+pname+rate+rate2+course+year+sem+inst+number);
-        //ui->textEdit->setReadOnly(true);
-        //ui->textEdit->setText("CHO BLAD");
-
+        for (int i=pos;i<command.size();i++)
+        {
+            if(command[i]==':' || command[i]==';') break;
+            else
+               {
+                n2.append(command[i]);
+                pos=i;
+            }
+        }
+        pos+=2;
+        for (int i=pos;i<command.size();i++)
+        {
+            if(command[i]==':' || command[i]==';') break;
+            else
+               {
+                n3.append(command[i]);
+                pos=i;
+            }
+        }
+        pos+=2;
+        table_records temporary;
+        QStringList parts;
+        parts = name.split(' ');
+        temporary.fname=parts[0];
+        temporary.lname=parts[1];
+        temporary.pname=parts[2];
+        temporary.rate=rate;
+        temporary.rate2=rate2;
+        temporary.course=course;
+        temporary.year=year;
+        temporary.sem=sem;
+        temporary.inst=inst;
+        temporary.s1=n1;
+        temporary.s2=n2;
+        temporary.s3=n3;
+        if(Nres>0)
+        {
+           My_Table.insert(My_Table.size()-1, temporary);
+        }
+        Nres--;
+        qDebug()<<Nres;
+        if(Nres==0){
+            update_table();
+        }
     }
 }
 
 void WinMain::on_prev_botton_clicked()
 {
-    //ui->textEdit->setText("CHO BLAD");
-    ui->comboBox->setCurrentIndex(2);
+
+    //ui->comboBox->setCurrentIndex(2);
 }
+QString WinMain:: convert_conf(){
+    QString result,temp; // course,inst,year
+    temp.setNum(MyKey);
+    result="changeconf:"+temp+':';
+    temp.setNum(Config.low_r);
+    result+=temp+':';
+    temp.setNum(Config.hight_r);
+    result+=temp+':';
+    temp.setNum(Config.low_rate);
+    result+=temp+':';
+    temp.setNum(Config.hight_rate);
+    result+=temp+':';
+    if(!Config.sem1 && !Config.sem2) result+="0:";
+    else if(Config.sem1 && !Config.sem2) result+="1:";
+    else if(!Config.sem1 && Config.sem2) result+="2:";
+    else if(Config.sem1 && Config.sem2) result+="3:";
+    temp.setNum(Config.sorting_by);
+    result+=temp+':';
+    int to_convert=0x0;
+    if(Config.c4) to_convert+=8;
+    if(Config.c3) to_convert+=4;
+    if(Config.c2) to_convert+=2;
+    if(Config.c1) to_convert+=1;
+    temp.setNum(to_convert,16);
+    result+=temp+':';
+    to_convert=0;
+    if(Config.igdg) to_convert+=8;
+    if(Config.igsn) to_convert+=4;
+    if(Config.ikni) to_convert+=2;
+    if(Config.ikta) to_convert+=1;
+    temp.setNum(to_convert,16);
+    result+=temp+':';
+    to_convert=0;
+    if(Config._2018) to_convert+=8;
+    if(Config._2017) to_convert+=4;
+    if(Config._2016) to_convert+=2;
+    if(Config._2015) to_convert+=1;
+    temp.setNum(to_convert,16);
+    result+=temp+';';
+    to_convert=0;
+    return  result;
+}
+
 void WinMain::change_conf()
 {
     //low_r,hight_r,low_rate,hight_rate,sem,sorting_by,course,inst,year;
@@ -437,6 +542,7 @@ void WinMain::change_conf()
     ui->doubleSpin_to->setValue(Config.hight_r);
     ui->doubleSpin_from_2->setValue(Config.low_rate);
     ui->doubleSpin_to_2->setValue(Config.hight_rate);
+    qDebug()<<"From Change conf"<<Config.low_r<<Config.hight_r<<Config.low_rate<<Config.hight_rate;
     ui->sem1->setChecked(Config.sem1);
     ui->sem2->setChecked(Config.sem2);
     ui->comboBox->setCurrentIndex(Config.sorting_by);
@@ -452,12 +558,15 @@ void WinMain::change_conf()
     ui->action2016->setChecked(Config._2016);
     ui->action2017->setChecked(Config._2017);
     ui->action2018->setChecked(Config._2018);
+    config_change_enable=true;
 }
 void WinMain:: config_change()
 {
+    if(config_change_enable)
+    {
     Config.low_r=ui->doubleSpin_from->value();
     Config.hight_r=ui->doubleSpin_to->value();
-    Config.low_r=ui->doubleSpin_from_2->value();
+    Config.low_rate=ui->doubleSpin_from_2->value();
     Config.hight_rate=ui->doubleSpin_to_2->value();
     Config.sem1=ui->sem1->isChecked();
     Config.sem2=ui->sem2->isChecked();
@@ -473,11 +582,137 @@ void WinMain:: config_change()
     Config._2015=ui->action2015->isChecked();
     Config._2016=ui->action2016->isChecked();
     Config._2017=ui->action2017->isChecked();
-    Config._2018=ui->action2018->isChecked();
+    Config._2018=ui->action2018->isChecked(); //можливо буде доповнення до цієї функції, мб для темп масиву значень.. мб
+    }
 }
 
 void WinMain::on_comboBox_currentIndexChanged(int index)
 {
-    qDebug()<<index;
+    config_change();
     //рейтинг - 0, бал - 1, ім - 2
+}
+
+void WinMain::on_search_name_clicked()
+{
+    QTextStream send(sok);
+    QString s;
+    if(Config!=Sended_conf)
+    {
+        Sended_conf=Config;
+        s=convert_conf();
+        send<<s; send<<flush;
+    }
+    s.clear();
+    //QString size_of_get,sort_num,name;
+    //s="get:"+num_need_records+':'+last_elem_num_of_sort+':'+line_edit.text()+';';   #-якщо поле пусте
+    s="get:10:";
+    send<<s;
+    if(Config.sorting_by==0 && My_Table.size()!=0)
+    {
+        send<<My_Table[My_Table.size()-1].s1;
+    }
+    else {send<<"0";}
+    if(Config.sorting_by==1  && My_Table.size()!=0)
+    {
+        send<<My_Table[My_Table.size()-1].s2;
+    }
+    else {send<<"0";}
+    if(Config.sorting_by==2  && My_Table.size()!=0)
+    {
+        send<<My_Table[My_Table.size()-1].s3;
+    }
+    else {send<<"0";}
+    s=":testname;";
+    send<<s;
+    send<<flush;
+}
+
+void WinMain::on_action2015_changed()
+{
+    config_change();
+}
+
+void WinMain::on_action2016_changed()
+{
+    config_change();
+}
+
+void WinMain::on_action2017_changed()
+{
+    config_change();
+}
+
+void WinMain::on_action2018_changed()
+{
+    config_change();
+}
+
+void WinMain::on_sem1_changed()
+{
+    config_change();
+}
+
+void WinMain::on_sem2_changed()
+{
+    config_change();
+}
+
+void WinMain::on_igdg_changed()
+{
+    config_change();
+}
+
+void WinMain::on_igsn_changed()
+{
+    config_change();
+}
+
+void WinMain::on_ikni_changed()
+{
+    config_change();
+}
+
+void WinMain::on_ikta_changed()
+{
+    config_change();
+}
+
+void WinMain::on_course1_changed()
+{
+    config_change();
+}
+
+void WinMain::on_course2_changed()
+{
+    config_change();
+}
+
+void WinMain::on_course3_changed()
+{
+    config_change();
+}
+
+void WinMain::on_course4_changed()
+{
+    config_change();
+}
+
+void WinMain::on_doubleSpin_from_valueChanged(double arg1)
+{
+    config_change();
+}
+
+void WinMain::on_doubleSpin_to_valueChanged(double arg1)
+{
+    config_change();
+}
+
+void WinMain::on_doubleSpin_from_2_valueChanged(double arg1)
+{
+    config_change();
+}
+
+void WinMain::on_doubleSpin_to_2_valueChanged(double arg1)
+{
+    config_change();
 }

@@ -605,24 +605,26 @@ void WinMain::on_search_name_clicked()
     s.clear();
     //QString size_of_get,sort_num,name;
     //s="get:"+num_need_records+':'+last_elem_num_of_sort+':'+line_edit.text()+';';   #-якщо поле пусте
+    qDebug()<<ui->lineEdit->text().size()<<"Size of name";
     s="get:10:";
     send<<s;
     if(Config.sorting_by==0 && My_Table.size()!=0)
     {
-        send<<My_Table[My_Table.size()-1].s1;
+        send<<My_Table[My_Table.size()-1].s1+':';
     }
-    else {send<<"0";}
-    if(Config.sorting_by==1  && My_Table.size()!=0)
+    else if(Config.sorting_by==1  && My_Table.size()!=0)
     {
-        send<<My_Table[My_Table.size()-1].s2;
+        send<<My_Table[My_Table.size()-1].s2+':';
     }
-    else {send<<"0";}
-    if(Config.sorting_by==2  && My_Table.size()!=0)
+    else  if(Config.sorting_by==2  && My_Table.size()!=0)
     {
-        send<<My_Table[My_Table.size()-1].s3;
+        send<<My_Table[My_Table.size()-1].s3+':';
     }
-    else {send<<"0";}
-    s=":testname;";
+    else {send<<"0:";}
+    if(ui->lineEdit->text().size()>0)
+            s=ui->lineEdit->text()+';';
+    else
+            s="#;";
     send<<s;
     send<<flush;
 }

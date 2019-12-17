@@ -200,7 +200,7 @@ void Login:: decoding(QString command)
             return;
         }
         else {
-            //qDebug()<<login_found<<""<<pass_found;
+            qDebug()<<login_found<<""<<pass_found;
             if(login_found[0]=='1' && pass_found[0]=='1'){
                 QTextStream send_it(sok);
                 send_it<<"login:"+ui->lineEdit->text()+':'+ui->lineEdit_2->text()+';';
@@ -210,7 +210,7 @@ void Login:: decoding(QString command)
                 QMessageBox:: information(this,"Помилка","Пароль невірний!");
             }
             else if(login_found[0]=='0'){
-                QMessageBox:: information(this,"Помилка","Логін невірний!");
+                QMessageBox:: information(this,"Помилка","Логін невірний, або такий уже в мережі!");
             }
         }
 

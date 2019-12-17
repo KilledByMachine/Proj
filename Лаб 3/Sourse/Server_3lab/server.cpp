@@ -48,7 +48,7 @@ Server::Server(QObject *parent) : QObject(parent)
                             }
                          //я напартачив з записами в самій бд, буду конвертити тут)
                      }
-                     qDebug() << id << name<<lastname<<l<<lastname.toDouble()<<l.toDouble();
+                     //qDebug() << id << name<<lastname<<l<<lastname.toDouble()<<l.toDouble();
                      lastname.clear();
                  }
 
@@ -97,13 +97,13 @@ void Server::slotNewConnection()
     NewUser.desc=mTcpSocket->socketDescriptor();
     NewUser.sok=mTcpSocket;
 
-    Table.insert(Table.end(),NewUser);
-    str.setCodec("UTF-8");
-    QString s="Текст, text";
+    Table.insert(Table.begin(),NewUser);
+    //str.setCodec("UTF-8");
+    //QString s="Текст, text";
     //QString s="send:First : Name : par :69.765:4.56:2:2017:I:IKNI:1234;";
     //s="text";
-    str <<s;
-    str<<flush;
+    //str <<s;
+    //str<<flush;
     qDebug() << "New Connect";
     qDebug() <<mTcpSocket->socketDescriptor();
     connect(NewUser.sok, SIGNAL(disconnected()), this, SLOT(slotClientDisconnected()));
@@ -117,24 +117,38 @@ void Server::slotClientDisconnected()
     qDebug()<<"DISC";
     QTcpSocket* clientSocket = static_cast< QTcpSocket* >(sender());
     clientSocket->close();
-    for(int i=0;i<Table.size();i++)
+    for(int i=0;i<Table.size() && !Table.isEmpty();i++)
     {
+        qDebug()<<"Table desc: "<<Table[i].desc;
         if(Table[i].sok->socketDescriptor()==-1) {
             Num=i;
             Desc=Table[i].desc;
         }
+
     }
-    Table.removeAt(Num);
-    if(db.isOpen()){
-        for(int i=0;i<Table.size();i++)
+    if(!Table.isEmpty())
+            Table.removeAt(Num);
+    //bool conf_valid=false;
+    qDebug()<<Desc;
+    qDebug()<<Desc<<"--after cirle desc";
+    for(int i=0;i<Users_conf.size()-1 && !Users_conf.isEmpty();i++)
+    {
+        qDebug()<<"User desc: "<<Users_conf[i].desc;
+        if(Users_conf[i].desc==Desc)
         {
-            if(Users_conf[i].desc==Desc) Num=i;
+            qDebug()<<Users_conf[i].desc<<"--Desc";
+            Num=i;
+
         }
+    }
+    if(db.isOpen() && !Users_conf.isEmpty()){
+        //ТРАБЛ
         QString updated_conf =convert_conf(Num);
         QSqlQuery query;
         QString temp; temp.setNum(Users_conf[Num].Conf.user_id);
-        query.exec("UPDATE  Users SET Config='"+updated_conf+"' WHERE ID="+temp);
-        qDebug()<<query.lastError();
+        qDebug()<<updated_conf<<temp<<"Try save conf";
+        //query.exec("UPDATE  Users SET Config='"+updated_conf+"' WHERE ID="+temp);
+        //qDebug()<<query.lastError();
     }
     else{
         qDebug()<<"DB doesnt avalibel, cant save config!";
@@ -371,38 +385,53 @@ void Server:: decoding(QString command, int descriptor)
                 qDebug()<<"select * from Users where Name='"+login+"'";
                 query.exec("select * from Users where Name='"+login+"'");
                 if(query.next()){
-                    if(query.value(2).toString()==pass)
+                     if(query.value(2).toString()==pass)
                     {
-                        send<<"rlogin:1:"+query.value(0).toString()+';';
-                        send<<flush;
+
+                        qDebug()<<"Такий                 ";
+                        QString keyid=query.value(0).toString();
+
                         //залогінити, занести в список юзерів,
                         user_list temp_user_list;
                         temp_user_list.desc=descriptor;
-                        Users_conf.insert(Users_conf.end(),temp_user_list);
+                        //якщо такий дексриптор активний, тобт є, то не робити інсерту
+                        bool is_hear=false; int num;
+                        for(int i=0;i<Users_conf.size();i++){
+                            if(Users_conf[i].Conf.user_id==keyid)
+                               {
+                                is_hear=true;
+                                num=i;
+                               }
+                        }
+                        if(!is_hear) {
+                            Users_conf.insert(Users_conf.end(),temp_user_list);
+                        }
+                        else{
+                            Users_conf[num].desc=descriptor;
+                        }
                         //вносимо з пустими налаштуваннями, при першому запиті вони запишуться
-                        QString keyid,low_r,hight_r,low_rate,hight_rate,sem,sorting_by,course,inst,year;
+                        QString low_r,hight_r,low_rate,hight_rate,sem,sorting_by,course,inst,year;
                         QString string_to_convert=query.value(3).toString();
+                        qDebug()<<string_to_convert;
                         string_to_convert.chop(1);
                         QStringList parts=string_to_convert.split(':');
                         qDebug()<<"Size of parts in login: "<<parts.size();
+                        qDebug()<<parts;
                         //ТРАБЛ
                         //keyid=parts[0];
-                        //low_r=parts[1];
-                        //hight_r=parts[2];
-                        //low_rate=parts[3];
-                        //hight_rate=parts[4];
-                        //sem=parts[5];
-                        //sorting_by=parts[6];
-                        //course=parts[7];
-                        //inst=parts[8];
-                        //year=parts[9];          //а тепер конверти
+                        low_r=parts[0];
+                        hight_r=parts[1];
+                        low_rate=parts[2];
+                        hight_rate=parts[3];
+                        sem=parts[4];
+                        sorting_by=parts[5];
+                        course=parts[6];
+                        inst=parts[7];
+                        year=parts[8];          //а тепер конверти
 
                         bool convert; int to_convert=0;
                         my_config temp;
-                        int Key = keyid.toInt(&convert,10);
-                        if(!convert) { qDebug()<<"Bad keyID"; return;}
-                        temp.user_id=Key;
-                        if(!convert){ qDebug()<<"Bad convert"; return;}
+                        temp.user_id=keyid.toInt();
                         temp.low_r=low_r.toDouble(&convert);
                         if(!convert){ qDebug()<<"Bad convert"; return;}
                         temp.hight_r=hight_r.toDouble(&convert);
@@ -466,15 +495,13 @@ void Server:: decoding(QString command, int descriptor)
                             }
 
                         }
-                    }
-                    else
-                    {
-                        send<<"rfind:1:0;";
+                        qDebug()<<"sended login 1 1";
+                        send<<"rlogin:1:"+query.value(0).toString()+';';
                         send<<flush;
                     }
                 }
                 else{
-                    send<<"rfind:0:0;";
+                    send<<"rlogin:0:0;";
                     send<<flush;
                 }
             }
@@ -575,6 +602,7 @@ void Server:: decoding(QString command, int descriptor)
 
                             bool convert; int to_convert=0;
                             my_config temp;
+                            temp.user_id=new_id;
                             int Key = keyid.toInt(&convert,10);
                             if(!convert) { qDebug()<<"Bad keyID"; return;}
                             temp.user_id=Key;
@@ -629,6 +657,7 @@ void Server:: decoding(QString command, int descriptor)
                             temp._2017=to_convert/4; to_convert%=4;
                             temp._2016=to_convert/2; to_convert%=2;
                             temp._2015=to_convert/1;
+                            temp.is_connected=true;
                             if(!convert){ qDebug()<<"Bad convert"; return;}
                             else
                             {
@@ -679,17 +708,18 @@ void Server:: decoding(QString command, int descriptor)
         }
         else{
             qDebug()<<key<<" "<<key.toInt();
-            //send config
-            //QString keyid,low_r,hight_r,low_rate,hight_rate,sem,sorting_by,course,inst,year;
-            //зробтити відправку дефолтних, тут щось придумаю, що попаде кароч
-            //потім ці налашт будуть зберігатись в бд разом з іменем юзера в форматі строки, при конекті буде отправля
-            //тись строка без перевірок
             QString default_conf="putconf:"+key+":67.345:89.567:3.45:4.48:2:1:A:8:8;";
             QTcpSocket *tmp=nullptr;
             for(int i=0; i<Table.size();i++)
             {
                 if(Table[i].desc==descriptor) {
                     tmp=Table[i].sok;
+                    break;
+                }
+            }
+            for(int i=0; i<Users_conf.size();i++){
+                if(Users_conf[i].Conf.user_id==key.toInt()) {
+                    Users_conf[i].desc=descriptor;
                     break;
                 }
             }
@@ -701,6 +731,7 @@ void Server:: decoding(QString command, int descriptor)
                 qDebug()<<"select * from Users where ID='"+key+"'";
                 query.exec("select * from Users where ID='"+key+"'");
                 if(query.next()){
+                   qDebug()<<"putconf:"+key+':'+query.value(3).toString();
                    send<<"putconf:"+key+':'+query.value(3).toString();
                    send<<flush;
                 }
@@ -752,12 +783,13 @@ void Server:: decoding(QString command, int descriptor)
         if(size_of_get.size()==0 || sort_num.size()==0 || name.size()==0)     //якщо парамтери пусті
         {
             qDebug()<<"no match param";
+            qDebug()<<size_of_get.size()<<sort_num.size()<<name.size();
             return;
         }
         else {
             qDebug()<<"Its GET"<<size_of_get<<" "<<sort_num<<" "<<name;
             //передача цих даних в фкцію створення запиту в бд
-            int num=size_of_get.toInt();
+            int num=size_of_get.toInt(),j;
             QTcpSocket *tmp=nullptr;
             for(int i=0; i<Table.size();i++)
             {
@@ -766,10 +798,255 @@ void Server:: decoding(QString command, int descriptor)
                     break;
                 }
             }
+            my_config Conf;
+            for(int i=0; i<Table.size();i++)
+            {
+                if(Users_conf[i].desc==descriptor) {
+                    Conf=Users_conf[i].Conf;
+                    j=i;
+                    break;
+                }
+            }
+
             QTextStream send(tmp);
             send.setCodec("UTF-8");
             QSqlQuery query;
+            QString select, temp_select;
+            select= "select * from Records where Rate_r > '";
+            temp_select.setNum( Conf.low_r); select+=temp_select+"' and Rate_r < '";
+            temp_select.setNum(Conf.hight_r-0.001); select+=temp_select+"' and Rate_b > '";
+            temp_select.setNum(Conf.low_rate); select+=temp_select+"'  and Rate_b < '";
+            temp_select.setNum(Conf.hight_rate-0.001); select+=temp_select+"' ";
+            //хедер з діпазонами готов
+            int temp_num=0;
+            if(Conf.sem1 && Conf.sem2){
+                temp_select="   ";
+            }
+            else if(Conf.sem1){
+                temp_select=" and Semester='1'  ";
+            }
+            else if(Conf.sem2){
+                temp_select=" and Semester='2'  ";
+            }
+            select+=temp_select;
+            if(Conf.c1 && Conf.c2 && Conf.c3 && Conf.c4){
+                temp_select="   ";
+            }
+            else {
+                //c1-c4
+                // щас тут будуть перебори через іф, 16 варіантів.. в 3х екземплярах
+                if(!Conf.c1 && !Conf.c2 && !Conf.c3 && !Conf.c4)
+                {
+                    temp_select=" and Course='5' ";
+                }
+                if(!Conf.c1 && !Conf.c2 && !Conf.c3 && Conf.c4)
+                {
+                    temp_select=" and Course='4' ";
+                }
+                if(!Conf.c1 && !Conf.c2 && Conf.c3 && !Conf.c4)
+                {
+                    temp_select=" and Course='3' ";
+                }
+                if(!Conf.c1 && !Conf.c2 && Conf.c3 && Conf.c4)
+                {
+                    temp_select=" and (Course='3' or Course='3')  ";
+                }
+                if(!Conf.c1 && Conf.c2 && !Conf.c3 && !Conf.c4)
+                {
+                    temp_select=" and Course='2' ";
+                }
+                if(!Conf.c1 && Conf.c2 && !Conf.c3 && Conf.c4)
+                {
+                    temp_select=" and (Course='2' or Course='4') ";
+                }
+                if(!Conf.c1 && Conf.c2 && Conf.c3 && !Conf.c4)
+                {
+                    temp_select=" and (Course='2' or Course='3') ";
+                }
+                if(!Conf.c1 && Conf.c2 && Conf.c3 && Conf.c4)
+                {
+                    temp_select=" and ( Course='2' or Course='3' or Course='4') ";
+                }
+                if(Conf.c1 && !Conf.c2 && !Conf.c3 && !Conf.c4)
+                {
+                    temp_select=" and Course='1'  ";
+                }
+                if(Conf.c1 && !Conf.c2 && !Conf.c3 && Conf.c4)
+                {
+                    temp_select=" and (Course='1' or Course='4') ";
+                }
+                if(Conf.c1 && !Conf.c2 && Conf.c3 && !Conf.c4)
+                {
+                    temp_select=" and ( Course='1' or Course='3' ) ";
+                }
+                if(Conf.c1 && !Conf.c2 && Conf.c3 && Conf.c4)
+                {
+                    temp_select=" and ( Course='1' or Course='3' or Course='4') ";
+                }
+                if(Conf.c1 && Conf.c2 && !Conf.c3 && !Conf.c4)
+                {
+                    temp_select=" and ( Course='1' or Course='2' ) ";
+                }
+                if(Conf.c1 && Conf.c2 && !Conf.c3 && Conf.c4)
+                {
+                    temp_select=" and ( Course='1' or Course='2' or Course='4') ";
+                }
+                if(Conf.c1 && Conf.c2 && Conf.c3 && !Conf.c4)
+                {
+                    temp_select=" and ( Course='1' or Course='2' or Course='3') ";
+                }
+
+            }
+            select+=temp_select;
+            if(Conf.igdg && Conf.igsn && Conf.ikni && Conf.ikta){
+                temp_select="   ";
+            }
+            else {
+                if(!Conf.igdg && !Conf.igsn && !Conf.ikni && !Conf.ikta)
+                {
+                    temp_select=" and Inst='aaaaa' ";
+                }
+                if(!Conf.igdg && !Conf.igsn && !Conf.ikni && Conf.ikta)
+                {
+                    temp_select=" and Inst='ІКТА' ";
+                }
+                if(!Conf.igdg && !Conf.igsn && Conf.ikni && !Conf.ikta)
+                {
+                    temp_select=" and Inst='ІКНІ' ";
+                }
+                if(!Conf.igdg && !Conf.igsn && Conf.ikni && Conf.ikta)
+                {
+                    temp_select=" and (Inst='ІКНІ' or Inst='ІКТА')  ";
+                }
+                if(!Conf.igdg && Conf.igsn && !Conf.ikni && !Conf.ikta)
+                {
+                    temp_select=" and Inst='ІГСН' ";
+                }
+                if(!Conf.igdg && Conf.igsn && !Conf.ikni && Conf.ikta)
+                {
+                    temp_select=" and (Inst='ІГСН' or Inst='ІКТА') ";
+                }
+                if(!Conf.igdg && Conf.igsn && Conf.ikni && !Conf.ikta)
+                {
+                    temp_select=" and (Inst='ІГСН' or Inst='ІКНІ') ";
+                }
+                if(!Conf.igdg && Conf.igsn && Conf.ikni && Conf.ikta)
+                {
+                    temp_select=" and ( Inst='ІГСН' or Inst='ІКНІ' or Inst='ІКТА') ";
+                }
+                if(Conf.igdg && !Conf.igsn && !Conf.ikni && !Conf.ikta)
+                {
+                    temp_select=" and Inst='ІГДГ'  ";
+                }
+                if(Conf.igdg && !Conf.igsn && !Conf.ikni && Conf.ikta)
+                {
+                    temp_select=" and (Inst='ІГДГ' or Inst='ІКТА') ";
+                }
+                if(Conf.igdg && !Conf.igsn && Conf.ikni && !Conf.ikta)
+                {
+                    temp_select=" and ( Inst='ІГДГ' or Inst='ІКНІ' ) ";
+                }
+                if(Conf.igdg && !Conf.igsn && Conf.ikni && Conf.ikta)
+                {
+                    temp_select=" and ( Inst='ІГДГ' or Inst='ІКНІ' or Inst='ІКТА') ";
+                }
+                if(Conf.igdg && Conf.igsn && !Conf.ikni && !Conf.ikta)
+                {
+                    temp_select=" and ( Inst='ІГДГ' or Inst='ІГСН' ) ";
+                }
+                if(Conf.igdg && Conf.igsn && !Conf.ikni && Conf.ikta)
+                {
+                    temp_select=" and ( Inst='ІГДГ' or Inst='ІГСН' or Inst='ІКТА') ";
+                }
+                if(Conf.igdg && Conf.igsn && Conf.ikni && !Conf.ikta)
+                {
+                    temp_select=" and ( Inst='ІГДГ' or Inst='ІГСН' or Inst='ІКНІ') ";
+                }
+
+            }
+            select+=temp_select;
+            if(Conf._2018 && Conf._2017 && Conf._2016 && Conf._2015){
+                temp_select="   ";
+            }
+            else {
+                if(!Conf._2018 && !Conf._2017 && !Conf._2016 && !Conf._2015)
+                {
+                    temp_select=" and Year_='aaaaa' ";
+                }
+                if(!Conf._2018 && !Conf._2017 && !Conf._2016 && Conf._2015)
+                {
+                    temp_select=" and Year_='2015' ";
+                }
+                if(!Conf._2018 && !Conf._2017 && Conf._2016 && !Conf._2015)
+                {
+                    temp_select=" and Year_='2016' ";
+                }
+                if(!Conf._2018 && !Conf._2017 && Conf._2016 && Conf._2015)
+                {
+                    temp_select=" and (Year_='2016' or Year_='2015')  ";
+                }
+                if(!Conf._2018 && Conf._2017 && !Conf._2016 && !Conf._2015)
+                {
+                    temp_select=" and Year_='2017' ";
+                }
+                if(!Conf._2018 && Conf._2017 && !Conf._2016 && Conf._2015)
+                {
+                    temp_select=" and (Year_='2017' or Year_='2015') ";
+                }
+                if(!Conf._2018 && Conf._2017 && Conf._2016 && !Conf._2015)
+                {
+                    temp_select=" and (Year_='2017' or Year_='2016') ";
+                }
+                if(!Conf._2018 && Conf._2017 && Conf._2016 && Conf._2015)
+                {
+                    temp_select=" and ( Year_='2017' or Year_='2016' or Year_='2015') ";
+                }
+                if(Conf._2018 && !Conf._2017 && !Conf._2016 && !Conf._2015)
+                {
+                    temp_select=" and Year_='2018'  ";
+                }
+                if(Conf._2018 && !Conf._2017 && !Conf._2016 && Conf._2015)
+                {
+                    temp_select=" and (Year_='2018' or Year_='2015') ";
+                }
+                if(Conf._2018 && !Conf._2017 && Conf._2016 && !Conf._2015)
+                {
+                    temp_select=" and ( Year_='2018' or Year_='2016' ) ";
+                }
+                if(Conf._2018 && !Conf._2017 && Conf._2016 && Conf._2015)
+                {
+                    temp_select=" and ( Year_='2018' or Year_='2016' or Year_='2015') ";
+                }
+                if(Conf._2018 && Conf._2017 && !Conf._2016 && !Conf._2015)
+                {
+                    temp_select=" and ( Year_='2018' or Year_='2017' ) ";
+                }
+                if(Conf._2018 && Conf._2017 && !Conf._2016 && Conf._2015)
+                {
+                    temp_select=" and ( Year_='2018' or Year_='2017' or Year_='ІКТА') ";
+                }
+                if(Conf._2018 && Conf._2017 && Conf._2016 && !Conf._2015)
+                {
+                    temp_select=" and ( Year_='2018' or Inst='ІГСН' or Inst='2016') ";
+                }
+
+
+            }
+            //рейтинг - 0, бал - 1, ім - 2
+            select+=temp_select;
+            if(Conf.sorting_by==0){
+                temp_select =" order by Sort_by_r ";
+            }
+            else if(Conf.sorting_by==1) {
+                temp_select =" order by Sort_by_b ";
+            }
+            else if(Conf.sorting_by==2) {
+                temp_select =" order by Sort_by_name ";
+            }
+            select+=temp_select;
+            qDebug()<<select;
             query.exec("SELECT * FROM Records");                //вні буде налаштовуватись в відповідності до конфіга
+            //а тут будуть варіації запитів відносно налаштувань
             table_records Temp;
             while (query.next() && num>0) {
                 num--;
@@ -811,7 +1088,7 @@ void Server:: decoding(QString command, int descriptor)
         }
     if(part_heder=="changeconf")
     {
-        qDebug()<<"Im hear!!!!!!!!!!!";
+        qDebug()<<"Im hear!!!!!!!!!!!"<< descriptor;
         QString keyid,low_r,hight_r,low_rate,hight_rate,sem,sorting_by,course,inst,year;
         for (int i=pos;i<command.size();i++)
         {

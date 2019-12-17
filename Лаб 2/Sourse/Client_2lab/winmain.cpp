@@ -6,7 +6,7 @@ WinMain::WinMain(QWidget *parent) :
     ui(new Ui::WinMain)
 {
     ui->setupUi(this);
-    //ui->tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ui->tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
     //ui->tableWidget->setEditTriggers(QAbstractItemView::AllEditTriggers);
     //table.setEditTriggers(QAbstractItemView::NoEditTriggers);
 
@@ -70,6 +70,7 @@ void WinMain::on_pushButton_clicked()
     //qDebug()<<ui->action1->isChecked();
     //ui->textEdit->clear();
     sok->disconnectFromHost();
+    ui->tableWidget->clearContents();
     emit show_log();
     close();
 }
@@ -80,11 +81,26 @@ void WinMain:: get_keyID(int key){
 }
 
 void WinMain:: update_table(){
-    if(now==0 && next==0){
+        qDebug()<<My_Table.size()<<now<<next;
         if(My_Table.size()<=10){
-            ui->prev_botton->setDisabled(true);
-            ui->next_button->setDisabled(true);
             for(int i=0;i<My_Table.size();i++){
+
+                    ui->tableWidget->setItem(i,0,new QTableWidgetItem(My_Table[i].fname));
+                    ui->tableWidget->setItem(i,1,new QTableWidgetItem(My_Table[i].lname));
+                    ui->tableWidget->setItem(i,2,new QTableWidgetItem(My_Table[i].pname));
+                    ui->tableWidget->setItem(i,3,new QTableWidgetItem(My_Table[i].rate));
+                    ui->tableWidget->setItem(i,4,new QTableWidgetItem(My_Table[i].rate2));
+                    ui->tableWidget->setItem(i,5,new QTableWidgetItem(My_Table[i].course));
+                    ui->tableWidget->setItem(i,6,new QTableWidgetItem(My_Table[i].year));
+                    ui->tableWidget->setItem(i,7,new QTableWidgetItem(My_Table[i].sem));
+                    ui->tableWidget->setItem(i,8,new QTableWidgetItem(My_Table[i].inst));
+
+                    //0-імя 1-прізв 2 - по б 3-рейт 4-сер б 5-курс 6-рік 7-інст
+
+            }
+        }
+        else {
+            for(int i=0;i+now<My_Table.size() && i+now<=next;i++){
 
                     ui->tableWidget->setItem(i,0,new QTableWidgetItem(My_Table[now+i].fname));
                     ui->tableWidget->setItem(i,1,new QTableWidgetItem(My_Table[now+i].lname));
@@ -99,8 +115,11 @@ void WinMain:: update_table(){
                     //0-імя 1-прізв 2 - по б 3-рейт 4-сер б 5-курс 6-рік 7-інст
 
             }
+
+
         }
-    }
+        ui->tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
 }
 
 void WinMain:: get_from_serv()
@@ -482,6 +501,7 @@ void WinMain:: decoding(QString command)
         Nres--;
         qDebug()<<Nres;
         if(Nres==0){
+            ui->tableWidget->setEditTriggers(QAbstractItemView::AllEditTriggers);
             update_table();
         }
     }
@@ -489,9 +509,29 @@ void WinMain:: decoding(QString command)
 
 void WinMain::on_prev_botton_clicked()
 {
-
-    //ui->comboBox->setCurrentIndex(2);
+    if(now > 0){
+        now-=10;
+        next-=10;
+        ui->tableWidget->clearContents();
+        ui->tableWidget->setEditTriggers(QAbstractItemView::AllEditTriggers);
+        qDebug()<<"Now= "<<now<<"Next= "<<next;
+        update_table();
+    }
 }
+void WinMain::on_next_button_clicked()
+{
+
+    if(next < My_Table.size()){
+        now+=10;
+        next+=10;
+        ui->tableWidget->clearContents();
+        ui->tableWidget->setEditTriggers(QAbstractItemView::AllEditTriggers);
+        qDebug()<<"Now= "<<now<<"Next= "<<next;
+        update_table();
+    }
+
+}
+
 QString WinMain:: convert_conf(){
     QString result,temp; // course,inst,year
     temp.setNum(MyKey);
@@ -594,11 +634,20 @@ void WinMain::on_comboBox_currentIndexChanged(int index)
 
 void WinMain::on_search_name_clicked()
 {
+    qDebug()<<"Size of Table="<<My_Table.size();
+    ui->tableWidget->clearContents();
+    now=0; next=9;
+    My_Table.clear();
     QTextStream send(sok);
+    send.setCodec("UTF-8");
+    //QTextStream str(mTcpSocket);
+    //str.setCodec("CP-1251");CP=Windows
+    //str.setCodec("UTF-8");
     QString s;
     if(Config!=Sended_conf)
     {
         Sended_conf=Config;
+        My_Table.clear();
         s=convert_conf();
         send<<s; send<<flush;
     }
@@ -718,3 +767,5 @@ void WinMain::on_doubleSpin_to_2_valueChanged(double arg1)
 {
     config_change();
 }
+
+

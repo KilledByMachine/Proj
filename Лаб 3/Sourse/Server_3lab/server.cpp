@@ -93,6 +93,7 @@ void Server::slotNewConnection()
     mTcpSocket = mTcpServer->nextPendingConnection();
     QTextStream str(mTcpSocket);
     //str.setCodec("CP-1251");CP=Windows
+    //str.setCodec("UTF-8");
     Msok NewUser;
     NewUser.desc=mTcpSocket->socketDescriptor();
     NewUser.sok=mTcpSocket;
@@ -119,6 +120,7 @@ void Server::slotClientDisconnected()
     clientSocket->close();
     for(int i=0;i<Table.size() && !Table.isEmpty();i++)
     {
+        qDebug()<<i<<"-- I"<<Table.size();
         qDebug()<<"Table desc: "<<Table[i].desc;
         if(Table[i].sok->socketDescriptor()==-1) {
             Num=i;
@@ -127,7 +129,7 @@ void Server::slotClientDisconnected()
 
     }
     if(!Table.isEmpty())
-            Table.removeAt(Num);
+            {Table.removeAt(Num);}
     //bool conf_valid=false;
     qDebug()<<Desc;
     qDebug()<<Desc<<"--after cirle desc";
@@ -147,8 +149,8 @@ void Server::slotClientDisconnected()
         QSqlQuery query;
         QString temp; temp.setNum(Users_conf[Num].Conf.user_id);
         qDebug()<<updated_conf<<temp<<"Try save conf";
-        //query.exec("UPDATE  Users SET Config='"+updated_conf+"' WHERE ID="+temp);
-        //qDebug()<<query.lastError();
+        query.exec("UPDATE  Users SET Config='"+updated_conf+"' WHERE ID="+temp);
+        qDebug()<<query.lastError();
     }
     else{
         qDebug()<<"DB doesnt avalibel, cant save config!";
@@ -267,8 +269,8 @@ void Server:: decoding(QString command, int descriptor)
             if(db.isOpen())
             {
                 qDebug()<<"select * from Users where Name='"+log+"'";
-                query.exec("select * from Users where Name='"+log+"'");
-                if(query.next()){
+                bool ok=query.exec("select * from Users where Name='"+log+"'");
+                if(query.next() && ok){
                     if(query.value(2).toString()==pass)
                     {
                         send<<"rfind:1:1;";
@@ -395,8 +397,8 @@ void Server:: decoding(QString command, int descriptor)
                         user_list temp_user_list;
                         temp_user_list.desc=descriptor;
                         //якщо такий дексриптор активний, тобт є, то не робити інсерту
-                        bool is_hear=false; int num;
-                        for(int i=0;i<Users_conf.size();i++){
+                        bool is_hear=false; int num=0;
+                        for(int i=0;i<Users_conf.size() && !Users_conf.isEmpty();i++){
                             if(Users_conf[i].Conf.user_id==keyid)
                                {
                                 is_hear=true;
@@ -404,7 +406,7 @@ void Server:: decoding(QString command, int descriptor)
                                }
                         }
                         if(!is_hear) {
-                            Users_conf.insert(Users_conf.end(),temp_user_list);
+                            Users_conf.insert(Users_conf.begin(),temp_user_list);
                         }
                         else{
                             Users_conf[num].desc=descriptor;
@@ -485,7 +487,7 @@ void Server:: decoding(QString command, int descriptor)
                         if(!convert){ qDebug()<<"Bad convert"; return;}
                         else
                         {
-                            for(int i=0; i<Users_conf.size();i++)
+                            for(int i=0; i<Users_conf.size() && !Users_conf.isEmpty();i++)
                             {
                                 if(Users_conf[i].desc==descriptor) {
                                     Users_conf[i].Conf=temp;
@@ -572,39 +574,42 @@ void Server:: decoding(QString command, int descriptor)
                         QString temp_1; temp_1.setNum(new_id);
                         QString new_query="insert into Users values("+temp_1+",'"+user+"','"
                                 +pass+"','67.345:89.567:3.45:4.48:2:1:A:8:8;')";
+                        //ТРАБЛ поход мусорниий код папався під ногу
                         query.exec(new_query);
-                        send<<"rreg:1:";
-                        send<<new_id;
-                        send<<";";
-                        send<<flush;
+                        //send<<"rreg:1:";
+                        //send<<new_id;
+                        //send<<";";
+                        //send<<flush;
                         //збереження налаштувань на сервері
-                            send<<"rlogin:1:"+query.value(0).toString()+';';
-                            send<<flush;
+                            //send<<"rlogin:1:"+query.value(0).toString()+';';
+                            //send<<flush;
                             //залогінити, занести в список юзерів,
                             user_list temp_user_list;
                             temp_user_list.desc=descriptor;
+                            qDebug()<<665<<Users_conf.size()<<Users_conf.isEmpty();
                             Users_conf.insert(Users_conf.end(),temp_user_list);
+                            qDebug()<<665<<Users_conf.size()<<Users_conf.isEmpty();
                             //вносимо з пустими налаштуваннями, при першому запиті вони запишуться
-                            QString keyid,low_r,hight_r,low_rate,hight_rate,sem,sorting_by,course,inst,year;
+                            QString low_r,hight_r,low_rate,hight_rate,sem,sorting_by,course,inst,year;
                             QString string_to_convert="67.345:89.567:3.45:4.48:2:1:A:8:8;";
                             string_to_convert.chop(1);
                             QStringList parts=string_to_convert.split(':');
-                            keyid=parts[0];
-                            low_r=parts[1];
-                            hight_r=parts[2];
-                            low_rate=parts[3];
-                            hight_rate=parts[4];
-                            sem=parts[5];
-                            sorting_by=parts[6];
-                            course=parts[7];
-                            inst=parts[8];
-                            year=parts[9];          //а тепер конверти
+                            //keyid=parts[0];
+                            low_r=parts[0];
+                            hight_r=parts[1];
+                            low_rate=parts[2];
+                            hight_rate=parts[3];
+                            sem=parts[4];
+                            sorting_by=parts[5];
+                            course=parts[6];
+                            inst=parts[7];
+                            year=parts[8];          //а тепер конверти
 
                             bool convert; int to_convert=0;
                             my_config temp;
                             temp.user_id=new_id;
-                            int Key = keyid.toInt(&convert,10);
-                            if(!convert) { qDebug()<<"Bad keyID"; return;}
+                            int Key =new_id;                       //keyid.toInt(&convert,10);
+                            //if(!convert) { qDebug()<<"Bad keyID"; return;}
                             temp.user_id=Key;
                             if(!convert){ qDebug()<<"Bad convert"; return;}
                             temp.low_r=low_r.toDouble(&convert);
@@ -658,18 +663,27 @@ void Server:: decoding(QString command, int descriptor)
                             temp._2016=to_convert/2; to_convert%=2;
                             temp._2015=to_convert/1;
                             temp.is_connected=true;
+                            qDebug()<<665<<Users_conf.size()<<Users_conf.isEmpty();
                             if(!convert){ qDebug()<<"Bad convert"; return;}
                             else
-                            {
-                                for(int i=0; i<Users_conf.size();i++)
+                            {   //ТРАБЛ
+                                qDebug()<<665<<Users_conf.size()<<Users_conf.isEmpty();
+                                for(int i=0; i<Users_conf.size() && !Users_conf.isEmpty();i++)
                                 {
                                     if(Users_conf[i].desc==descriptor) {
                                         Users_conf[i].Conf=temp;
+
                                         qDebug()<<"Config saved!!!";
+                                        //на крайняк сюда
                                         break;
                                     }
                                 }
                             }
+                            send<<"rreg:1:";
+                            send<<new_id;
+                            send<<";";
+                            send<<flush;
+                            //сюда пока поставлю
 
                         }
                     else
@@ -717,15 +731,18 @@ void Server:: decoding(QString command, int descriptor)
                     break;
                 }
             }
-            for(int i=0; i<Users_conf.size();i++){
+            qDebug()<<"get con f"<<Users_conf.size()<<Users_conf.isEmpty();
+            qDebug()<<"get con f"<<Users_conf[0].desc;
+            for(int i=0; i<Users_conf.size() && !Users_conf.isEmpty();i++){
                 if(Users_conf[i].Conf.user_id==key.toInt()) {
                     Users_conf[i].desc=descriptor;
+                    qDebug()<<"get con f"<<Users_conf[0].desc;
                     break;
                 }
             }
             QTextStream send(tmp);
             QSqlQuery query;
-            qDebug()<<"Send Conf";
+            qDebug()<<"Send Conf"<<"Desc ----"<<descriptor;
             if(db.isOpen())
             {
                 qDebug()<<"select * from Users where ID='"+key+"'";
@@ -736,8 +753,8 @@ void Server:: decoding(QString command, int descriptor)
                    send<<flush;
                 }
                 else{
-                    send<<default_conf;
-                    send<<flush;
+                    //send<<default_conf;
+                    //send<<flush;
                 }
             }
             else{
@@ -799,7 +816,8 @@ void Server:: decoding(QString command, int descriptor)
                 }
             }
             my_config Conf;
-            for(int i=0; i<Table.size();i++)
+            // ТРАБЛ Table-> Users-conf
+            for(int i=0; i<Users_conf.size();i++)
             {
                 if(Users_conf[i].desc==descriptor) {
                     Conf=Users_conf[i].Conf;
@@ -1034,21 +1052,30 @@ void Server:: decoding(QString command, int descriptor)
             }
             //рейтинг - 0, бал - 1, ім - 2
             select+=temp_select;
+            if(name!="#"){
+                temp_select="and Name LIKE '%"+name+"%'";
+                select+=temp_select;
+            }
             if(Conf.sorting_by==0){
+                temp_select =" and Sort_by_r>"+sort_num;
                 temp_select =" order by Sort_by_r ";
             }
             else if(Conf.sorting_by==1) {
+                temp_select =" and Sort_by_b>"+sort_num;
                 temp_select =" order by Sort_by_b ";
             }
             else if(Conf.sorting_by==2) {
+                temp_select =" and Sort_by_name>"+sort_num;
                 temp_select =" order by Sort_by_name ";
             }
             select+=temp_select;
             qDebug()<<select;
-            query.exec("SELECT * FROM Records");                //вні буде налаштовуватись в відповідності до конфіга
+            query.exec(select);
+            qDebug()<<query.lastError();
+            //query.exec("SELECT * FROM Records");                //вні буде налаштовуватись в відповідності до конфіга
             //а тут будуть варіації запитів відносно налаштувань
             table_records Temp;
-            while (query.next() && num>0) {
+            while (query.next() ) {
                 num--;
                 Temp.name=query.value(1).toString()+':';
                 Temp.rate=query.value(2).toString()+':';
@@ -1063,7 +1090,7 @@ void Server:: decoding(QString command, int descriptor)
                 Temp_table.insert(Temp_table.size(),Temp);
             }
             send<<"nres:";
-            send<<Temp_table.size()-num;
+            send<<Temp_table.size();
             send<<";";
             send<<flush;
             for(int i=0; i<Temp_table.size();i++){

@@ -119,6 +119,8 @@ private slots:
 
     void on_doubleSpin_to_2_valueChanged(double arg1);
 
+    void on_next_button_clicked();
+
 private:
     Ui::WinMain *ui;
     QTcpSocket * sok;
@@ -129,6 +131,7 @@ private:
     int Nres=0;
     int now=0;
     int next=0;
+    int cadr=0;
 
 };
 
